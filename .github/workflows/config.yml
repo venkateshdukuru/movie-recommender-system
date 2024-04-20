@@ -1,37 +1,39 @@
 
-name: deploy-multi-env.yml
+name: mobile-ci.yml
 
 on:
-  push:
-    branches:
-      - main
+  pull_request:
+    branches: [feature]
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  build-android:
+    runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Set up Android SDK
+        uses: actions/setup-java@v2
         with:
-          ref: main
-      - name: Install dependencies
-        run: pip install boto3
-      - name: deploy_staging
-        if: ${{ github.event.branch == 'staging' }}
-        needs: deploy
-        steps:
-          - uses: aws-actions/configure-aws-credentials@v1
-            with:
-              aws-access-key-id: ${{ secrets.AWS_STAGING_KEY }}
-              aws-secret-access-key: ${{ secrets.AWS_STAGING_SECRET }}
-              aws-region: us-east-1
-          - run: python configure_env.py staging
-      - name: deploy_production
-        if: ${{ github.event.branch == 'master' }}
-        needs: deploy
-        steps:
-          - uses: aws-actions/configure-aws-credentials@v1
-            with:
-              aws-access-key-id: ${{ secrets.AWS_PRODUCTION_KEY }}
-              aws-secret-access-key: ${{ secrets.AWS_PRODUCTION_SECRET }}
-              aws-region: us-east-1
+          java-version: '11.x'
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug
+      - name: Archive APK file
+        uses: actions/upload-artifact@v2
+        with:
+          name: app
+          path: app/build/outputs/apk/debug/app-debug.apk
+  
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install CocoaPods dependencies
+        run: pod install
+      - name: Build with Xcode
+        run: xcodebuild -scheme MyProject -workspace MyProject.xcworkspace archive
+      - name: Archive IPA file
+        uses: actions/upload-artifact@v2
+        with:
+          name: app
+          path: MyProject.xcarchive
