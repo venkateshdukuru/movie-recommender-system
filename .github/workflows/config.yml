@@ -1,0 +1,39 @@
+
+name: mobile-ci.yml
+
+on:
+  pull_request:
+    branches: [feature]
+
+jobs:
+  build-android:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Android SDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11.x'
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug
+      - name: Archive APK file
+        uses: actions/upload-artifact@v2
+        with:
+          name: app
+          path: app/build/outputs/apk/debug/app-debug.apk
+  
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install CocoaPods dependencies
+        run: pod install
+      - name: Build with Xcode
+        run: xcodebuild -scheme MyProject -workspace MyProject.xcworkspace archive
+      - name: Archive IPA file
+        uses: actions/upload-artifact@v2
+        with:
+          name: app
+          path: MyProject.xcarchive
