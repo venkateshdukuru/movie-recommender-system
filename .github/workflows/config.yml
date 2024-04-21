@@ -1,7 +1,9 @@
+        with:
+          username: venkateshdukuru
 
 name: Example Workflow
 
-on: 
+on:
   push
 
 jobs:
@@ -14,5 +16,7 @@ jobs:
       - name: Use action from Docker image
         uses: docker://docker-image-name
 
-      - name: Use action from another repository
-        uses: owner/repo@venkateshdukuru
+      - name: Use action from your repository
+        uses: venkateshdukuru/movie-recommender-system@main
+        with:
+          username: venkateshdukuru
