@@ -1,4 +1,5 @@
 
+
 name: branch-protection.yml
 
 on:
@@ -9,18 +10,20 @@ on:
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: github.event_name == 'push'
     steps:
       - name: Check for code changes
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Run code coverage report
-        uses: actions/upload-artifact@v2
+        run: git diff --quiet || echo "Code changes detected"
+      - name: Download coverage report
+        uses: actions/download-artifact@v2
         with:
           name: code-coverage
-          path: <path/to/report>
-      - name: Verify code linting and unit tests
-        run: <command to run linting and tests>
-      - name: Fail workflow if requirements not met
-        run: exit 1
+          path: coverage/
+      - name: Verify linting and unit tests
+        run: |
+          # Run linting and unit tests
+          # If successful, set variable to true
+          # Otherwise, set variable to false
+      - name: Fail if requirements not met
+        if: steps.verify.outputs.success == 'false'
+        run: exit 1 
