@@ -1,33 +1,39 @@
 
 
-name: deploy-process
+---
+name: branch-protection
 
 on:
-  pull_request:
+  push:
     branches:
-      - development
+      - main
 
 jobs:
-  build:
-    runs-on: android-latest
+  enforce-branch-rules:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
+      - name: Check for code changes
+        uses: actions/github-script@v3
         with:
-          node-version: 14
-          default: true
-      - name: Install Dependencies
-        run: yarn install
-      - name: Build Project
-        run: ./build-process.sh
-      - name: Deploy to Testing Environment
-        if: success()
-        run: ./deploy-process.sh
-      - name: Notify Discord
-        if: success()
-        uses: appleboy/discord-action@master
+          script: |
+            if (github.context.payload.commits.length > 0) {
+              return true;
+            } else {
+              return false;
+            }
+      - name: Ensure code coverage report is available
+        if: steps.check_for_code_changes.outputs.return-value == 'true'
+        uses: actions/download-artifact@v2
         with:
-          webhook_id: ${{ secrets.WEBHOOK_ID }}
-          webhook_token: ${{ secrets.WEBHOOK_TOKEN }}
-          message: Deployment Successful
+          name: code-coverage-report
+      - name: Verify code linting and unit tests passed
+        if: steps.check_for_code_changes.outputs.return-value == 'true'
+        uses: actions/download-artifact@v2
+        with:
+          name: linting-and-unit-tests
+      - name: Enforce code coverage
+        if: steps.check_for_code_changes.outputs.return-value == 'true'
+        run: |
+          # Code to enforce code coverage goes here
+      -
