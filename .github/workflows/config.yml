@@ -1,7 +1,5 @@
 
-
----
-name: branch-protection
+name: branch-protection.yml
 
 on:
   push:
@@ -14,26 +12,15 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - name: Check for code changes
-        uses: actions/github-script@v3
+        uses: actions/checkout@v2
         with:
-          script: |
-            if (github.context.payload.commits.length > 0) {
-              return true;
-            } else {
-              return false;
-            }
-      - name: Ensure code coverage report is available
-        if: steps.check_for_code_changes.outputs.return-value == 'true'
-        uses: actions/download-artifact@v2
+          fetch-depth: 0
+      - name: Run code coverage report
+        uses: actions/upload-artifact@v2
         with:
-          name: code-coverage-report
-      - name: Verify code linting and unit tests passed
-        if: steps.check_for_code_changes.outputs.return-value == 'true'
-        uses: actions/download-artifact@v2
-        with:
-          name: linting-and-unit-tests
-      - name: Enforce code coverage
-        if: steps.check_for_code_changes.outputs.return-value == 'true'
-        run: |
-          # Code to enforce code coverage goes here
-      -
+          name: code-coverage
+          path: <path/to/report>
+      - name: Verify code linting and unit tests
+        run: <command to run linting and tests>
+      - name: Fail workflow if requirements not met
+        run: exit 1
