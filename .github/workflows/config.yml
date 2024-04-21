@@ -1,7 +1,6 @@
 
 
-
-name: ci-cd-pipeline
+name: deploy-process
 
 on:
   pull_request:
@@ -10,25 +9,25 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: android-latest
     steps:
-      - name: Install Node.js
+      - uses: actions/checkout@v2
+      - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
           node-version: 14
-          registry-url: https://registry.npmjs.org/
-      - name: Set as default
-        run: npm config set registry https://registry.npmjs.org/
-      - name: Install project dependencies
+          default: true
+      - name: Install Dependencies
         run: yarn install
-      - name: Build project
-        run: ./build.sh
-      - name: Deploy to testing environment
-        run: ./deploy.sh
+      - name: Build Project
+        run: ./build-process.sh
+      - name: Deploy to Testing Environment
         if: success()
+        run: ./deploy-process.sh
       - name: Notify Discord
+        if: success()
         uses: appleboy/discord-action@master
         with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: "Project deployed successfully to testing environment"
+          webhook_id: ${{ secrets.WEBHOOK_ID }}
+          webhook_token: ${{ secrets.WEBHOOK_TOKEN }}
+          message: Deployment Successful
