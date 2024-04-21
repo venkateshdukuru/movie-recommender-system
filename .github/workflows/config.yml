@@ -1,29 +1,17 @@
+---
+name: Example Workflow
 
-name: CI/CD Pipeline for Data Science Project
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+on: [push]
+
 jobs:
-  build:
+  example_job:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Install dependencies
-        run: |
-          pip install numpy==1.21.0
-          pip install pandas==1.3.3
-          pip install scikit-learn==0.24.2
-      - name: Build and Test
-        run: |
-          # Add build and test commands here
-      - name: Deploy
-        uses: some-deployment-action
-        with:
-          # Add deployment configurations here
+      - name: Use action from the same repository
+        uses: ./path/to/local/action
+
+      - name: Use action from Docker image
+        uses: docker://docker-image-name
+
+      - name: Use action from another repository
+        uses: owner/repo@ref
