@@ -1,5 +1,4 @@
 
-
 name: branch-protection.yml
 
 on:
@@ -11,27 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check for code changes
-        uses: actions/github-script@v3
-        with:
-          script: |
-            if (github.event.commits.length > 0) {
-              console.log("Code changes found.");
-            } else {
-              console.log("No code changes found, skipping branch protection.");
-              process.exit(78);
-            }
-      - name: Ensure code coverage report is available as artifact
+        run: git diff --quiet HEAD^ HEAD
+        shell: bash
+      - name: Check for code coverage report
         uses: actions/download-artifact@v2
         with:
-          name: coverage-report
-          path: coverage
+          name: code-coverage-report
+          path: coverage-report
+        if: ${{ success() }}
       - name: Verify code linting and unit tests
-        uses: actions/github-script@v3
+        uses: actions/download-artifact@v2
         with:
-          script: |
-            if (github.event.commits.length > 0) {
-              console.log("Code linting and unit tests passed.");
-            } else {
-              console.log("Code linting and unit tests failed, preventing push to main.");
-              process.exit(1);
-            }
+          name: linting-and-unit-tests
+          path: linting-and-unit-tests
+        if: ${{ success() }}
+      - name: Fail if requirements not met
+        run: exit 1
+        if: ${{ failure() }}
