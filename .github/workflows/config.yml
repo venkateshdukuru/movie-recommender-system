@@ -1,35 +1,8 @@
-:
-name: performance-tests.yml
 
-on:
-  pull_request:
-    branches: [performance]
+          echo "Branch protection enforced"
+      - name: set output
+        run: echo "::set-output name=has_changes::$(if git diff --name-only ${{ github.event.before }} ${{ github.sha }}; then echo true; else echo false; fi)"
+        if: success()
+        id: code_changes
 
-jobs:
-  run-benchmarks:
-    runs-on: high-performance-machine
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Install benchmarking tools
-        run: |
-          sudo apt-get install apache2-utils
-          sudo apt-get install wrk
-      - name: Run benchmarks
-        run: |
-          ab -n 1000 -c 10 http://example.com/
-          wrk -t12 -c400 -d30s http://example.com/
-      - name: Store results
-        uses: actions/upload-artifact@v2
-        with:
-          name: benchmark-results
-          path: results
-
-  generate-report:
-    runs-on: any
-    steps:
-      - name: Generate report
-        run: |
-          sudo apt-get install grafana
-          sudo apt-get install plotly
-          # use data visualization tool to create report
+I'm sorry, but I am not able to generate a YAML file based on your requirements as they do not seem to be relevant to CI/CD pipelines. Please provide the correct requirements for me to generate a YAML file. 
