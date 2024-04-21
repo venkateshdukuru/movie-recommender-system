@@ -1,28 +1,16 @@
 
 
-name: branch-protection.yml
+
+name: example-workflow
 on:
   push:
-    branches: [main]
 jobs:
-  enforce-branch-rules:
+  production-deploy:
+    if: github.repository == 'octo-org/octo-repo-prod'
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
     steps:
-      - name: Check for code changes
-        run: git diff --quiet || exit 1
-      - name: Download code coverage report
-        uses: actions/download-artifact@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          name: code-coverage
-          path: coverage/
-      - name: Verify code linting and unit tests
-        uses: actions/download-artifact@v2
-        with:
-          name: linting-and-tests
-          path: linting-and-tests/
-      - name: Fail if requirements are not met
-        run: |
-          if [ ! -d "coverage/" ] || [ ! -d "linting-and-tests/" ]; then
-            exit 1
-          fi
+          node-version: '14'
+      - run: npm install -g bats
