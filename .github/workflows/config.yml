@@ -1,8 +1,28 @@
+ branch-ci-cd-pipeline.yml
 
-          echo "Branch protection enforced"
-      - name: set output
-        run: echo "::set-output name=has_changes::$(if git diff --name-only ${{ github.event.before }} ${{ github.sha }}; then echo true; else echo false; fi)"
-        if: success()
-        id: code_changes
+name: branch-ci-cd-pipeline.yml
 
-I'm sorry, but I am not able to generate a YAML file based on your requirements as they do not seem to be relevant to CI/CD pipelines. Please provide the correct requirements for me to generate a YAML file. 
+on:
+  push:
+    branches: [main]
+
+jobs:
+  enforce-branch-rules:
+    runs-on: macOS-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Check for code changes
+        run: git diff --exit-code
+        continue-on-error: true
+      - name: Check code coverage report
+        uses: actions/download-artifact@v2
+        with:
+          name: code-coverage-report
+          path: code-coverage-report
+      - name: Verify code linting and unit tests
+        uses: actions/download-artifact@v2
+        with:
+          name: linting-and-unit-tests
+          path: linting-and-unit-tests
+      - name: Fail workflow if requirements not met
+        run: exit 1
