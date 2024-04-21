@@ -1,4 +1,34 @@
 
-        env:
-          API_DOCS_URL: ${{ steps.deploy-docs.outputs.url }}
- 
+
+name: e2e-tests
+
+on:
+  pull_request:
+    branches: [test]
+
+jobs:
+  run-e2e-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
+        db-tool: [MySQL, PostgreSQL]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install database management tool
+        run: sudo apt-get install ${{ matrix.db-tool }}
+      - name: Connect to test database and seed with sample data
+        run: ${{ matrix.db-tool }} -u username -p password -h localhost test_db < seed.sql
+      - name: Start application
+        run: npm start
+      - name: Run end-to-end tests
+        run: npm run e2e-tests
+      - name: Fail if any test failures occur
+        run: exit 1
+      - name: Clean up test database
+        run: ${{ matrix.db-tool }} -u username -p password -h localhost test_db < cleanup.sql
