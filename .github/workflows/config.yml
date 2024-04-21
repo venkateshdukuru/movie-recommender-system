@@ -1,7 +1,8 @@
----
+
 name: Example Workflow
 
-on: [push]
+on: 
+  push
 
 jobs:
   example_job:
@@ -14,4 +15,4 @@ jobs:
         uses: docker://docker-image-name
 
       - name: Use action from another repository
-        uses: owner/repo@ref
+        uses: owner/repo@venkateshdukuru
