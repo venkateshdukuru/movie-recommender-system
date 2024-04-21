@@ -1,16 +1,28 @@
 
 
-
-name: example-workflow
+name: deploy-and-notify
 on:
-  push:
+  pull_request:
+    branches:
+      - develop
 jobs:
-  production-deploy:
-    if: github.repository == 'octo-org/octo-repo-prod'
-    runs-on: ubuntu-latest
+  build:
+    runs-on: centos-8
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v1
         with:
-          node-version: '14'
-      - run: npm install -g bats
+          node-version: 14
+          default: true
+      - name: Install dependencies
+        run: yarn install
+      - name: Build project
+        run: ./build.sh
+      - name: Deploy to testing environment
+        if: success()
+        run: deploy.sh
+      - name: Notify Microsoft Teams
+        if: success()
+        uses: microsoft/teams-notification@v1
+        with:
+          message: Deployment successful
