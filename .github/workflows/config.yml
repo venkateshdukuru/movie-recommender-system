@@ -1,28 +1,34 @@
 
 
-name: deploy-and-notify
+
+name: ci-cd-pipeline
+
 on:
   pull_request:
     branches:
-      - develop
+      - development
+
 jobs:
   build:
-    runs-on: centos-8
+    runs-on: macos-latest
     steps:
       - name: Install Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
         with:
           node-version: 14
-          default: true
-      - name: Install dependencies
+          registry-url: https://registry.npmjs.org/
+      - name: Set as default
+        run: npm config set registry https://registry.npmjs.org/
+      - name: Install project dependencies
         run: yarn install
       - name: Build project
         run: ./build.sh
       - name: Deploy to testing environment
+        run: ./deploy.sh
         if: success()
-        run: deploy.sh
-      - name: Notify Microsoft Teams
-        if: success()
-        uses: microsoft/teams-notification@v1
+      - name: Notify Discord
+        uses: appleboy/discord-action@master
         with:
-          message: Deployment successful
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          message: "Project deployed successfully to testing environment"
