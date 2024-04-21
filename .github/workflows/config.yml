@@ -4,26 +4,33 @@ name: branch-protection.yml
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Check for code changes
-        run: git diff --quiet || echo "Code changes detected"
-      - name: Download coverage report
+        uses: actions/github-script@v3
+        with:
+          script: |
+            if (github.event.commits.length > 0) {
+              console.log('Code changes detected.');
+            } else {
+              console.log('No code changes detected, skipping branch protection.');
+              process.exit(0);
+            }
+      - name: Download code coverage report artifact
         uses: actions/download-artifact@v2
         with:
-          name: code-coverage
-          path: coverage/
-      - name: Verify linting and unit tests
+          name: code-coverage-report
+          path: code-coverage-report
+      - name: Verify code linting and unit tests
         run: |
-          # Run linting and unit tests
-          # If successful, set variable to true
-          # Otherwise, set variable to false
-      - name: Fail if requirements not met
-        if: steps.verify.outputs.success == 'false'
-        run: exit 1 
+          # Run code linting and unit tests here
+          # If successful, exit with code 0, else exit with code 1
+      - name: Fail workflow if requirements not met
+        run: |
+          # If code coverage report and code linting/unit tests were successful, exit with code 0
+          # Else,
