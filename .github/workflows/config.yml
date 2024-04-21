@@ -1,28 +1,28 @@
- branch-ci-cd-pipeline.yml
 
-name: branch-ci-cd-pipeline.yml
 
+name: branch-protection.yml
 on:
   push:
     branches: [main]
-
 jobs:
   enforce-branch-rules:
-    runs-on: macOS-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     steps:
       - name: Check for code changes
-        run: git diff --exit-code
-        continue-on-error: true
-      - name: Check code coverage report
+        run: git diff --quiet || exit 1
+      - name: Download code coverage report
         uses: actions/download-artifact@v2
         with:
-          name: code-coverage-report
-          path: code-coverage-report
+          name: code-coverage
+          path: coverage/
       - name: Verify code linting and unit tests
         uses: actions/download-artifact@v2
         with:
-          name: linting-and-unit-tests
-          path: linting-and-unit-tests
-      - name: Fail workflow if requirements not met
-        run: exit 1
+          name: linting-and-tests
+          path: linting-and-tests/
+      - name: Fail if requirements are not met
+        run: |
+          if [ ! -d "coverage/" ] || [ ! -d "linting-and-tests/" ]; then
+            exit 1
+          fi
