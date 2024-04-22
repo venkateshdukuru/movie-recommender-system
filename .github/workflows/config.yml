@@ -1,24 +1,23 @@
 
 
-name: branch-protection
+name: branch-protection.yml
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
     steps:
       - name: Check for code changes
-        run: git diff --name-only <old_commit> <new_commit> > changed_files.txt
+        run: git diff --name-only <old_commit> <new_commit>
       - name: Download code coverage report
         uses: actions/download-artifact@v2
         with:
           name: code-coverage-report
-          path: code-coverage-report
-      - name: Verify linting and unit tests
-        run: # verify linting and unit tests from previous workflow
-      - name: Fail if requirements not met
-        if: steps.code-coverage-report.outputs.code-coverage < 100
-        run: exit 1
+      - name: Verify code linting and unit tests
+        run: # placeholder for code linting and unit tests
+      - name: Fail if requirements are not met
+        run: exit 1 # fails the workflow if previous steps did not meet requirements
