@@ -1,23 +1,30 @@
 
-name: branch-protection.yml
 
+name: test-env
 on:
   push:
-    branches:
-      - main
-
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 jobs:
-  enforce-branch-rules:
+  build:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(github.event.head_commit.modified, 'code changes')
+    strategy:
+      matrix:
+        python-version: [3.5]
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
         with:
-          name: code-coverage-report
-          path: coverage-report
-      - name: Verify linting and unit tests
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
         run: |
-          # verify linting
-          # run unit tests
-      - name: Fail if requirements not met
-        run: exit 1
+          conda install python>=3.5 -y
+          conda install anaconda -y
+          conda install pip -y
+          conda install numpy=1.13.3 -y
+          pip install docx
+          pip install gooey
+          pip install matplotlib==2.0.0
+          pip install http://www.lfd.uci.edu/~gohlke/pythonlibs/bofhrmxk/opencv_python-3.1.0-cp35-none-win_amd64.whl
