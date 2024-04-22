@@ -1,10 +1,12 @@
 
 
-name: branch-protection.yml
+branch-protection.yaml:
+
+name: branch-protection
 
 on:
   push:
-    branches:
+    branches: 
       - main
 
 jobs:
@@ -12,32 +14,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check for code changes
-        uses: actions/github-script@v3
+        uses: actions/checkout@v2
         with:
-          script: |
-            if (github.event.commits.length > 0) {
-              console.log("Code changes detected.");
-              process.exit(0);
-            } else {
-              console.log("No code changes detected.");
-              process.exit(1);
-            }
-      - name: Get code coverage report
+          fetch-depth: 0
+      - name: Check code coverage report
         uses: actions/download-artifact@v2
         with:
-          name: code-coverage
-          path: code-coverage
-      - name: Run linting and unit tests
-        run: npm run lint && npm run test
-      - name: Check linting and unit test results
-        uses: actions/github-script@v3
+          name: code-coverage-report
+          path: code-coverage-report
+      - name: Verify code linting and unit tests
+        uses: actions/download-artifact@v2
         with:
-          script: |
-            if (github.job.status == "failure") {
-              console.log("Linting and unit tests failed.");
-              process.exit(1);
-            } else {
-              console.log("Linting and unit tests passed.");
-              process.exit(0);
-            }
-      - name
+          name: linting-and-unit-tests
+          path: linting-and-unit-tests
+      - name: Enforce requirements
+        if: ${{ steps.enforce-branch-rules.outputs.code-coverage-report == 'success' && steps.enforce-branch-rules.outputs.linting-and-unit-tests == 'success' }}
+        run: echo "All requirements met."
+      - name: Fail workflow if requirements not met
+        if: ${{ steps.enforce-branch-rules.outputs.code-coverage-report != 'success' || steps.enforce-branch-rules.outputs
