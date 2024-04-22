@@ -1,34 +1,24 @@
 
+
 name: branch-protection
+
 on:
   push:
     branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
     steps:
       - name: Check for code changes
-        run: git diff --name-only ${{ github.event.before }} ${{ github.event.after }} > changed_files.txt
+        run: git diff --name-only <old_commit> <new_commit> > changed_files.txt
       - name: Download code coverage report
         uses: actions/download-artifact@v2
         with:
           name: code-coverage-report
           path: code-coverage-report
-      - name: Verify code linting and unit tests
-        run: |
-          if [ -f changed_files.txt ]; then
-            # run linting and unit tests
-            # if successful, continue with workflow
-            # if not, fail the workflow
-          else
-            echo "No code changes detected. Skipping linting and unit tests."
-          fi
+      - name: Verify linting and unit tests
+        run: # verify linting and unit tests from previous workflow
       - name: Fail if requirements not met
-        if: always()
-        run: |
-          if [ -f changed_files.txt ]; then
-            if [ -f code-coverage-report/coverage.txt ]; then
-              echo "Code coverage report found."
-            else
-              echo "Code coverage report not found. Fail workflow."
-              exit
+        if: steps.code-coverage-report.outputs.code-coverage < 100
+        run: exit 1
