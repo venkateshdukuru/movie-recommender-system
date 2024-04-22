@@ -13,11 +13,15 @@ jobs:
     steps:
       - name: Check for code changes
         run: git diff --name-only <old_commit> <new_commit>
-      - name: Download code coverage report
-        uses: actions/download-artifact@v2
-        with:
-          name: code-coverage-report
-      - name: Verify code linting and unit tests
-        run: # placeholder for code linting and unit tests
-      - name: Fail if requirements are not met
-        run: exit 1 # fails the workflow if previous steps did not meet requirements
+      - name: Enforce requirements
+        if: ${{ steps.code_changes.outputs.returncode == 0 }}
+        steps:
+          - name: Download code coverage report
+            uses: actions/download-artifact@v2
+            with:
+              name: code-coverage-report
+              path: code-coverage-report
+          - name: Verify code linting and unit tests
+            run: placeholder
+        else:
+          run: echo "No changes found, no action needed."
