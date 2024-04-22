@@ -1,5 +1,4 @@
 
-
 name: branch-protection.yml
 
 on:
@@ -10,18 +9,15 @@ on:
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(github.event.head_commit.modified, 'code changes')
     steps:
-      - name: Check for code changes
-        run: git diff --name-only <old_commit> <new_commit>
-      - name: Enforce requirements
-        if: ${{ steps.code_changes.outputs.returncode == 0 }}
-        steps:
-          - name: Download code coverage report
-            uses: actions/download-artifact@v2
-            with:
-              name: code-coverage-report
-              path: code-coverage-report
-          - name: Verify code linting and unit tests
-            run: placeholder
-        else:
-          run: echo "No changes found, no action needed."
+      - uses: actions/download-artifact@v2
+        with:
+          name: code-coverage-report
+          path: coverage-report
+      - name: Verify linting and unit tests
+        run: |
+          # verify linting
+          # run unit tests
+      - name: Fail if requirements not met
+        run: exit 1
