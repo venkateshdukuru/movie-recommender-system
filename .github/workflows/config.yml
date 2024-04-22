@@ -1,29 +1,43 @@
 
+
 name: branch-protection.yml
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
     steps:
       - name: Check for code changes
-        run: git diff --quiet HEAD^ HEAD
-        shell: bash
-      - name: Check for code coverage report
+        uses: actions/github-script@v3
+        with:
+          script: |
+            if (github.event.commits.length > 0) {
+              console.log("Code changes detected.");
+              process.exit(0);
+            } else {
+              console.log("No code changes detected.");
+              process.exit(1);
+            }
+      - name: Get code coverage report
         uses: actions/download-artifact@v2
         with:
-          name: code-coverage-report
-          path: coverage-report
-        if: ${{ success() }}
-      - name: Verify code linting and unit tests
-        uses: actions/download-artifact@v2
+          name: code-coverage
+          path: code-coverage
+      - name: Run linting and unit tests
+        run: npm run lint && npm run test
+      - name: Check linting and unit test results
+        uses: actions/github-script@v3
         with:
-          name: linting-and-unit-tests
-          path: linting-and-unit-tests
-        if: ${{ success() }}
-      - name: Fail if requirements not met
-        run: exit 1
-        if: ${{ failure() }}
+          script: |
+            if (github.job.status == "failure") {
+              console.log("Linting and unit tests failed.");
+              process.exit(1);
+            } else {
+              console.log("Linting and unit tests passed.");
+              process.exit(0);
+            }
+      - name
