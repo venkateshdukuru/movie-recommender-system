@@ -1,24 +1,25 @@
 
 
-name: branch-protection.yaml
 
+name: branch-ci-cd-pipeline.yml
 on:
   push:
     branches: [main]
-
 jobs:
   enforce-branch-rules:
-    runs-on: ubuntu-latest
+    runs-on: macOS-latest
     steps:
       - name: Check for code changes
-        run: git diff --name-only <old_commit> <new_commit>
-        id: changed-files
-      - name: Enforce requirements
-        if: steps.changed-files.outputs.returncode == 0
-        steps:
-          - name: Download code coverage report
-            uses: actions/download-artifact@v2
-            with:
-              name: code-coverage-report
-          - name: Verify code linting and unit tests
-            run: placeholder
+        run: git diff --name-only ${{ github.base_ref }}..${{ github.head_ref }}
+        id: check-changes
+      - name: Get code coverage report
+        if: steps.check-changes.outputs > 0
+        uses: actions/download-artifact@v2
+        with:
+          name: code-coverage-report
+      - name: Verify code linting and unit tests
+        if: steps.check-changes.outputs > 0
+        run: ./run-tests.sh
+      - name: Fail if requirements are not met
+        if: steps.check-changes.outputs > 0
+        run: exit 1
