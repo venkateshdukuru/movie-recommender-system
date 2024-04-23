@@ -1,31 +1,42 @@
 
 
-name: deploy-to-staging-v2
+
+name: deploy-multi-env.yml
 
 on:
-  pull_request:
+  push:
     branches:
       - main
 
 jobs:
-  build-and-deploy:
-    runs-on: macOS-latest
+  deploy:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.9
     steps:
-      - name: Install Node.js version 14
-        uses: actions/setup-node@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
         with:
-          node-version: '14'
-      - name: Set as default
-        run: npm config set prefix '~/.npm-global'
-      - name: Install project dependencies
-        run: yarn install
-      - name: Build project
-        run: ./build-v2.sh
-      - name: Deploy to staging
-        run: ./deploy-to-staging.sh
-      - name: Discord notification
-        uses: appleboy/discord-action@master
-        with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: "Deployment to staging successful."
+          ref: main
+      - name: Install dependencies
+        run: pip install boto3
+      - name: deploy_staging
+        if: github.event.branch == 'staging'
+        needs: deploy
+        steps:
+          - name: Configure AWS credentials
+            uses: aws-actions/configure-aws-credentials@v1
+            with:
+              aws-access-key-id: ${{ secrets.AWS_STAGING_KEY }}
+              aws-secret-access-key: ${{ secrets.AWS_STAGING_SECRET }}
+              aws-region: us-east-1
+          - name: Configure environment variables for staging deployment
+            run: boto3 configure set environment staging
+      - name: deploy_production
+        if: github.event.branch == 'master'
+        needs: deploy
+        steps:
+          - name: Configure AWS credentials
+            uses: aws-actions/configure-aws-credentials@v1
+            with:
+              aws-access-key-id
