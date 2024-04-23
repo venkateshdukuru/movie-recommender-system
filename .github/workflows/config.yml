@@ -1,26 +1,37 @@
 
-                - If all requirements are met, allow the push to main
 
+name: branch-protection.yml
 
-name: branch-protection
 on:
   push:
     branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
-      - name: Check if pushed commit includes code changes
-        run: echo "Checking for code changes"
-      - name: Ensure code coverage report as artifact
-        run: echo "Generating code coverage report"
-        if: always()
-      - name: Verify code linting and unit tests
-        run: echo "Running linting and unit tests"
-        if: always()
-      - name: Fail workflow if requirements not met
-        run: echo "Requirements not met, failing workflow"
-        if: ${{ failure() }}
-      - name: Allow push to main if requirements met
-        run: echo "Requirements met, allowing push"
-        if: ${{ success() }}
+      - name: Check for code changes
+        run: git diff --quiet || exit 1
+      - name: Download code coverage report
+        uses: actions/download-artifact@v2
+        with:
+          name: check-coverage
+      - name: Verify code coverage report
+        run: |
+          if [ ! -f report.xml ]; then
+            echo "Missing code coverage report!"
+            exit 1
+          fi
+      - name: Download test results
+        uses: actions/download-artifact@v2
+        with:
+          name: run-tests
+      - name: Verify test results
+        run: |
+          if [ ! -f results.xml ]; then
+            echo "Missing test results!"
+            exit 1
+          fi
+      - name: Fail workflow if checks fail
+        run: exit 1
