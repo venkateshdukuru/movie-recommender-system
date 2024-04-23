@@ -1,37 +1,33 @@
 
 
-name: branch-protection.yml
+
+name: release-pipeline
 
 on:
-  push:
-    branches: [main]
+  pull_request:
+    branches:
+      - develop
 
 jobs:
-  enforce-branch-rules:
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+  build:
+    name: Build and Deploy
+    runs-on: macOS-latest
     steps:
-      - name: Check for code changes
-        run: git diff --quiet || exit 1
-      - name: Download code coverage report
-        uses: actions/download-artifact@v2
+      - name: Install Node.js version 14
+        uses: actions/setup-node@v2
         with:
-          name: check-coverage
-      - name: Verify code coverage report
-        run: |
-          if [ ! -f report.xml ]; then
-            echo "Missing code coverage report!"
-            exit 1
-          fi
-      - name: Download test results
-        uses: actions/download-artifact@v2
+          node-version: 14
+      - name: Set Node.js as default
+        run: sudo ln -sf /usr/local/bin/node /usr/local/bin/nodejs
+      - name: Install dependencies
+        run: yarn install
+      - name: Build project
+        run: ./build.sh
+      - name: Deploy to testing environment
+        run: ./deploy.sh
+        if: success()
+      - name: Notify Microsoft Teams
+        uses: microsoft/teams-notification@v1
         with:
-          name: run-tests
-      - name: Verify test results
-        run: |
-          if [ ! -f results.xml ]; then
-            echo "Missing test results!"
-            exit 1
-          fi
-      - name: Fail workflow if checks fail
-        run: exit 1
+          webhook_url: ${{ secrets.MICROSOFT_TEAMS_WEBHOOK }}
+          message: "Project successfully deployed to testing environment!"
