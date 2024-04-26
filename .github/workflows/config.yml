@@ -1,31 +1,39 @@
 
 
-name: deploy-notify.yml
+name: release-pipeline.yml
 
-on:
+on: 
   push:
     branches: [main]
 
 jobs:
   enforce-branch-rules:
-    runs-on: centos-8
+    runs-on: macOS-latest
     steps:
       - name: Check for code changes
-        uses: actions/checkout@v2
+        uses: actions/github-script@v3
         with:
-          fetch-depth: 0
-      - name: Enforce code coverage report
-        if: ${{ steps.check_code_changes.outputs.code_changes == 'true' }}
-        uses: actions/upload-artifact@v2
+          script: |
+            const changedFiles = await github.event.commits[0].added.concat(github.event.commits[0].modified);
+            if (changedFiles.length === 0) {
+              core.setFailed('No code changes were included in the push to main.');
+            }
+
+      - name: Check for code coverage report
+        uses: actions/download-artifact@v2
         with:
-          name: code-coverage-report
-          path: <path to code coverage report>
-      - name: Check for successful code linting and unit tests
-        if: ${{ steps.check_code_changes.outputs.code_changes == 'true' }}
-        uses: actions/upload-artifact@v2
+          name: code-coverage
+          path: coverage-report
+
+      - name: Verify code linting and unit tests
+        uses: actions/download-artifact@v2
         with:
-          name: code-linting-and-unit-tests
-          path: <path to code linting and unit test results>
-      - name: Fail if requirements are not met
-        if: ${{ steps.check_code_changes.outputs.code_changes == 'true' }}
-        run: exit 1
+          name: linting-and-unit-tests
+          path: linting-and-unit-tests
+
+      - name: Fail if requirements not met
+        run: |
+          if [ -d "coverage-report" ] && [ -d "linting-and-unit-tests" ]; then
+            echo "All requirements met.";
+          else
+            echo "One or more requirements
