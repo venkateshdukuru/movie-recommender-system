@@ -1,25 +1,34 @@
 
-name: branch-protection.yml
+name: ci-cd.yml
+
 on:
   push:
     branches:
       - main
+
 jobs:
   enforce-branch-rules:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    runs-on: macos-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Check for code changes
-        uses: actions/checkout@v2
-      - name: Enforce requirements
+        id: code_changes
         run: |
-          if [[ -n "$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})" ]]; then
-            if [ -z "${{ github.event.pull_request.head.repo.clone_url }}" ]; then
-              echo "Error: No code coverage report available as artifact. Please generate one from a previous workflow."
-              exit 1
-            fi
-            if [ -n "${{ github.event.head_commit.message }}" ]; then
-              echo "Error: Code linting and unit tests did not pass successfully. Please fix any issues and try again."
-              exit 1
-            fi
+          if git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -q '.php'; then
+            echo "Code changes found"
+          else
+            echo "No code changes found"
           fi
+      - name: Check code coverage report
+        if: steps.code_changes.outputs.code_changes == 'Code changes found'
+        uses: actions/download-artifact@v2
+        with:
+          name: code-coverage-report
+          path: code-coverage-report
+      - name: Verify code linting and unit tests
+        if: steps.code_changes.outputs.code_changes == 'Code changes found'
+        run: |
+          if code-coverage-report/coverage-report.txt | grep -q 'Code linting and unit tests passed'; then
+            echo "Code linting and unit tests passed"
+          else
+            echo "
