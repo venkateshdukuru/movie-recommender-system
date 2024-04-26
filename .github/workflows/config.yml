@@ -2,24 +2,26 @@
 
 name: release-pipeline.yml
 
-on: 
+on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
     runs-on: macOS-latest
     steps:
       - name: Check for code changes
-        uses: actions/github-script@v3
-        with:
-          script: |
-            const changedFiles = await github.event.commits[0].added.concat(github.event.commits[0].modified);
-            if (changedFiles.length === 0) {
-              core.setFailed('No code changes were included in the push to main.');
-            }
+        run: |
+          if [ -n "$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})" ]; then
+            echo "Code changes detected, enforcing requirements"
+          else
+            echo "No code changes detected"
+            exit 1
+          fi
+        shell: bash
 
-      - name: Check for code coverage report
+      - name: Ensure code coverage report
         uses: actions/download-artifact@v2
         with:
           name: code-coverage
@@ -28,12 +30,12 @@ jobs:
       - name: Verify code linting and unit tests
         uses: actions/download-artifact@v2
         with:
-          name: linting-and-unit-tests
-          path: linting-and-unit-tests
+          name: linting-and-tests
+          path: linting-and-tests
 
-      - name: Fail if requirements not met
+      - name: Fail workflow if requirements not met
         run: |
-          if [ -d "coverage-report" ] && [ -d "linting-and-unit-tests" ]; then
-            echo "All requirements met.";
+          if [ -f coverage-report/index.html ] && [ -f linting-and-tests/success.txt ]; then
+            echo "All requirements met, pushing to main"
           else
-            echo "One or more requirements
+            echo "Failed to meet requirements, preventing push to
