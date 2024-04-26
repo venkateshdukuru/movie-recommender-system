@@ -1,33 +1,32 @@
 
-
 name: ci-cd.yml
-
 on:
   push:
     branches: [main]
-
 jobs:
   enforce-branch-rules:
-    runs-on: macos-latest
-    if: github.event_name == 'push'
+    runs-on: macOS-latest
     steps:
-      - name: Check for code changes
+      - uses: actions/checkout@v2
+      - name: check for code changes
         run: |
-          if [ -z "$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})" ]; then
-            echo "No code changes detected. Skipping enforcement."
+          if git diff-tree --no-commit-id --name-only -r ${{github.sha}}; then
+            echo "Code changes detected"
+          else
+            echo "No code changes detected"
             exit 1
-          fi
-      - name: Enforce code coverage report
-        uses: actions/upload-artifact@v2
+        shell: bash
+      - name: check for code coverage report
+        uses: actions/download-artifact@v2
         with:
-          path: code-coverage-report
-      - name: Verify code linting and unit tests
-        uses: actions/upload-artifact@v2
+          name: code-coverage-report
+          path: coverage-report
+      - name: check for code linting and unit tests
+        uses: actions/download-artifact@v2
         with:
-          path: code-linting-unit-tests
-      - name: Fail if requirements not met
-        run: |
-          if [ -z "$(ls code-coverage-report)" ] || [ -z "$(ls code-linting-unit-tests)" ]; then
-            echo "Code coverage report or linting/unit tests not found. Push to main branch not allowed."
-            exit 1
-          fi
+          name: linting-and-unit-tests
+          path: linting-and-unit-tests
+      - name: fail workflow if requirements are not met
+        run: exit 1
+        if: ${{failure()}}
+        shell: bash
