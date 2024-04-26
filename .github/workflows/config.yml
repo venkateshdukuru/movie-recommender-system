@@ -1,32 +1,25 @@
 
+
 name: ci-cd.yml
+
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: macOS-latest
     steps:
       - name: Check for code changes
-        run: |
-          if [ -n "$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})" ]; then
-            echo "Code changes detected."
-          else
-            echo "No code changes detected. Skipping workflow."
-            exit 78
-          fi
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Ensure code coverage report is available
-        uses: actions/upload-artifact@v2
-        if: always()
+        uses: actions/download-artifact@v2
         with:
           name: code-coverage-report
-          path: code-coverage-report
       - name: Verify code linting and unit tests
-        run: |
-          if [ -f "lint-passed.txt" ] && [ -f "unit-tests-passed.txt" ]; then
-            echo "All code linting and unit tests passed."
-          else
-            echo "Code linting and unit tests failed. Please fix before pushing to main."
-            exit 78
-          fi
+        run: npm run lint && npm run test
+      - name: Fail if requirements not met
+        if: ${{ failure() }}
+        run: exit 1 
