@@ -1,34 +1,35 @@
 
-name: ci-cd.yml
 
+deploy-and-notify.yml:
+
+name: deploy-and-notify
 on:
   push:
     branches:
       - main
-
 jobs:
   enforce-branch-rules:
-    runs-on: macos-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: CentOS 8
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - name: Check for code changes
-        id: code_changes
-        run: |
-          if git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -q '.php'; then
-            echo "Code changes found"
-          else
-            echo "No code changes found"
-          fi
-      - name: Check code coverage report
-        if: steps.code_changes.outputs.code_changes == 'Code changes found'
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Verify code coverage report
         uses: actions/download-artifact@v2
         with:
-          name: code-coverage-report
-          path: code-coverage-report
+          name: code-coverage
+          path: coverage/
+        continue-on-error: true
       - name: Verify code linting and unit tests
-        if: steps.code_changes.outputs.code_changes == 'Code changes found'
+        uses: actions/download-artifact@v2
+        with:
+          name: linting-unit-tests
+          path: linting-unit-tests/
+        continue-on-error: true
+      - name: Fail if requirements not met
         run: |
-          if code-coverage-report/coverage-report.txt | grep -q 'Code linting and unit tests passed'; then
-            echo "Code linting and unit tests passed"
-          else
-            echo "
+          if [[ ! -f coverage/index.html || ! -f linting-unit-tests/pass.txt ]]; then
+            exit 1
+          fi
