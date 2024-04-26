@@ -1,4 +1,5 @@
 
+
 name: ci-cd.yml
 
 on:
@@ -7,24 +8,26 @@ on:
 
 jobs:
   enforce-branch-rules:
-    runs-on: macOS-latest
+    runs-on: macos-latest
+    if: github.event_name == 'push'
     steps:
       - name: Check for code changes
         run: |
-          git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep "\.py$"
-        id: code_changes
-      - name: Get code coverage report
-        uses: actions/download-artifact@v2
+          if [ -z "$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})" ]; then
+            echo "No code changes detected. Skipping enforcement."
+            exit 1
+          fi
+      - name: Enforce code coverage report
+        uses: actions/upload-artifact@v2
         with:
-          name: code-coverage
-          path: code-coverage
-        if: steps.code_changes.outputs.code_changes == true
-      - name: Check code linting and unit tests
-        uses: actions/download-artifact@v2
+          path: code-coverage-report
+      - name: Verify code linting and unit tests
+        uses: actions/upload-artifact@v2
         with:
-          name: lint-test-report
-          path: lint-test-report
-        if: steps.code_changes.outputs.code_changes == true
+          path: code-linting-unit-tests
       - name: Fail if requirements not met
-        run: exit 1
-        if: steps.code_changes.outputs.code_changes == true && (steps.code_coverage.outputs.code_coverage == 'not-found' || steps.lint_test_report.outputs.lint_test_report == 'not-found')
+        run: |
+          if [ -z "$(ls code-coverage-report)" ] || [ -z "$(ls code-linting-unit-tests)" ]; then
+            echo "Code coverage report or linting/unit tests not found. Push to main branch not allowed."
+            exit 1
+          fi
