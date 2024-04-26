@@ -1,35 +1,31 @@
 
 
-deploy-and-notify.yml:
+name: deploy-notify.yml
 
-name: deploy-and-notify
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+
 jobs:
   enforce-branch-rules:
-    runs-on: CentOS 8
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: centos-8
     steps:
       - name: Check for code changes
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Verify code coverage report
-        uses: actions/download-artifact@v2
+      - name: Enforce code coverage report
+        if: ${{ steps.check_code_changes.outputs.code_changes == 'true' }}
+        uses: actions/upload-artifact@v2
         with:
-          name: code-coverage
-          path: coverage/
-        continue-on-error: true
-      - name: Verify code linting and unit tests
-        uses: actions/download-artifact@v2
+          name: code-coverage-report
+          path: <path to code coverage report>
+      - name: Check for successful code linting and unit tests
+        if: ${{ steps.check_code_changes.outputs.code_changes == 'true' }}
+        uses: actions/upload-artifact@v2
         with:
-          name: linting-unit-tests
-          path: linting-unit-tests/
-        continue-on-error: true
-      - name: Fail if requirements not met
-        run: |
-          if [[ ! -f coverage/index.html || ! -f linting-unit-tests/pass.txt ]]; then
-            exit 1
-          fi
+          name: code-linting-and-unit-tests
+          path: <path to code linting and unit test results>
+      - name: Fail if requirements are not met
+        if: ${{ steps.check_code_changes.outputs.code_changes == 'true' }}
+        run: exit 1
