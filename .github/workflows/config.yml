@@ -1,33 +1,38 @@
 
-
-
-name: release-pipeline
+name: docker-build-and-test.yml
 
 on:
-  pull_request:
+  push:
     branches:
       - develop
 
 jobs:
-  build:
-    name: Build and Deploy
-    runs-on: macOS-latest
+  build-image:
+    runs-on: ubuntu-latest
     steps:
-      - name: Install Node.js version 14
-        uses: actions/setup-node@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build and push Docker image
+        run: |
+          docker build -t my-app:latest .
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker push my-app:latest
+  run-integration-tests:
+    runs-on: ubuntu-latest
+    needs: [build-image]
+    steps:
+      - name: Pull Docker image
+        run: docker pull my-app:latest
+      - name: Run integration tests
+        run: docker run my-app:latest pytest
+      - name: Store test results
+        uses: actions/upload-artifact@v2
         with:
-          node-version: 14
-      - name: Set Node.js as default
-        run: sudo ln -sf /usr/local/bin/node /usr/local/bin/nodejs
-      - name: Install dependencies
-        run: yarn install
-      - name: Build project
-        run: ./build.sh
-      - name: Deploy to testing environment
-        run: ./deploy.sh
-        if: success()
-      - name: Notify Microsoft Teams
-        uses: microsoft/teams-notification@v1
-        with:
-          webhook_url: ${{ secrets.MICROSOFT_TEAMS_WEBHOOK }}
-          message: "Project successfully deployed to testing environment!"
+          name: test-results
+          path: test-results
+  deploy-staging:
+    runs-on: [self-hosted, linux, windows, mac]
+    needs: [build-image]
+    steps:
+      - name: Execute deployment script
+        run: ./deploy.sh staging
