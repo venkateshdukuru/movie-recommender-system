@@ -1,35 +1,28 @@
 
 
-name: branch-protection.yml
+name: branch-protection
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+    
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
     steps:
       - name: Check for code changes
-        run: git diff --quiet HEAD^ HEAD
-        id: code-changes
-      - name: Get coverage report artifact
-        uses: actions/download-artifact@v2
-        if: ${{ steps.code-changes.outputs.code-changed == 'true' }}
+        uses: actions/checkout@v2
         with:
-          name: coverage-report
-      - name: Build with Maven or Gradle
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-        if: ${{ steps.code-changes.outputs.code-changed == 'true' }}
-      - name: Build job on docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: Dockerfile
-      - name: Linting and unit tests
+          path: changes
+      - name: Enforce requirements
+        if: ${{ steps.changes.outputs.exit-code == 0 }}
         run: |
-          # Commands for linting and unit tests
-        if: ${{ steps.code-changes.outputs.code-changed == 'true' }}
-      - name: Fail if requirements not met
-        run: exit 1
+          if [ -f "coverage_report.txt" ]; then
+            echo "Coverage report found"
+          else
+            echo "Coverage report not found"
+            exit 1
+          fi
+          ./gradlew build
+          ./gradlew lint
+          ./gradlew test
+        continue-on-error: false
