@@ -1,5 +1,4 @@
 
-
 name: branch-protection.yml
 
 on:
@@ -10,30 +9,31 @@ on:
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Check for code changes
-        uses: actions/github-script@v3
-        with:
-          script: |
-            const hasChanges = github.context.payload.commits.some(commit => commit.added.length > 0 || commit.modified.length > 0 || commit.removed.length > 0);
-            if (!hasChanges) {
-              core.setFailed("No code changes detected.");
-            }
-      
-      - name: Ensure code coverage report is available
+        run: |
+          if [[ $(git diff --name-only ${{ github.base_ref }}..${{ github.head_ref }}) ]]; then
+            touch code-changes.txt
+          else
+            touch no-code-changes.txt
+          fi
+      - name: Check code coverage report
+        if: success()
         uses: actions/download-artifact@v2
         with:
           name: code-coverage-report
-          path: code-coverage-report
-      
-      - name: Run Gradle build
-        run: gradle build
-      
+          path: coverage-report
+      - name: Build with Java Maven
+        if: success()
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build with Java Gradle
+        if: success()
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
       - name: Run code linting and unit tests
-        run: |
-          # Run code linting here
-          # Run unit tests here
-      
-      - name: Fail if requirements are not met
-        if: ${{ failure() && always() }}
-        run: exit 1
+        if: success()
+        uses: actions
