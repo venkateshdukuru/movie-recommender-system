@@ -1,28 +1,37 @@
 
-
-name: branch-protection
+name: branch-protection.yml
 on:
   push:
     branches: [main]
-    
+
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Check for code changes
-        uses: actions/checkout@v2
-        with:
-          path: changes
-      - name: Enforce requirements
-        if: ${{ steps.changes.outputs.exit-code == 0 }}
         run: |
-          if [ -f "coverage_report.txt" ]; then
-            echo "Coverage report found"
+          if [[ `git diff HEAD^..HEAD` ]]; then
+            echo "Code changes detected"
           else
-            echo "Coverage report not found"
+            echo "No code changes detected"
             exit 1
           fi
-          ./gradlew build
-          ./gradlew lint
-          ./gradlew test
-        continue-on-error: false
+      - name: Publish code coverage report
+        run: |
+          gradle jacocoTestReport
+          echo ::set-output name=coverage-report::./build/reports/jacoco/test/html/index.html
+        if: success()
+        id: coverage
+      - name: Build using Gradle
+        run: gradle build
+      - name: Code linting and unit tests
+        run: gradle lint test
+        if: success()
+      - name: Fail if requirements not met
+        run: |
+          if [[ ! -d "$coverage" ]]; then
+            echo "Code coverage report is not available"
+            exit 1
+          fi
+          if [[ $? -ne 
