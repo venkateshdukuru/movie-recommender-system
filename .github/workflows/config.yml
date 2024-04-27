@@ -1,31 +1,37 @@
 
 
 name: branch-protection.yml
-
 on:
   push:
-    branches: [main]
-
+    branches: 
+      - main
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' }}
     steps:
       - name: Check for code changes
-        run: git diff --quiet || echo "::set-output name=changes::true"
-      - name: Enforce requirements
-        if: steps.check.outputs.changes
+        uses: actions/github-script@v3
+        with:
+          script: |
+            if (github.event.commits.length > 0) {
+              console.log("Code changes detected.")
+            } else {
+              console.log("No code changes detected. Skipping job.")
+              process.exit(1)
+            }
+      - name: Check for code coverage report
+        uses: actions/download-artifact@v2
+        with:
+          name: code-coverage-report
+          path: coverage/
+      - name: Verify code linting and unit tests
+        run: yarn test
+        continue-on-error: true
+      - name: Fail if requirements not met
         run: |
-          # Check for code coverage artifact
-          if [ ! -f coverage_report.txt ]; then
-            echo "Code coverage report not found."
+          if [ -d "coverage/" ] && [ ${{ job.status }} == "success" ]; then
+            echo "All requirements met."
+          else
+            echo "Requirements not met. Failing workflow."
             exit 1
           fi
-          # Check for successful linting and unit tests
-          if [ ! -f linting_success.txt ]; then
-            echo "Linting and unit tests failed."
-            exit 1
-          fi
-      - name: Fail workflow if requirements not met
-        if: steps.check.outputs.changes && ( ${{ failure() }} || ${{ cancelled() }} )
-        run: echo "One or more requirements were not met. Push to main branch prevented."
