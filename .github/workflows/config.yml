@@ -1,34 +1,38 @@
 
+
 name: branch-protection.yml
+
 on:
   push:
     branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - name: Check for code changes
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: |
-          if [[ $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }}) ]]; then
-            echo "Code changes detected"
-          else
-            echo "No code changes detected"
-            exit 1
-          fi
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const commits = await github.repos.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha
+            })
+            const codeChanges = commits.data.some(commit => commit.stats.total > 0)
+            if (!codeChanges) {
+              core.setFailed("No code changes found in the pushed commit. Skipping branch rules enforcement.")
+            }
       - name: Download code coverage report
         uses: actions/download-artifact@v2
         with:
           name: code-coverage-report
-      - name: Build project using Gradle
-        run: ./gradlew build
-      - name: Run code linting
-        run: ./gradlew lint
-      - name: Run unit tests
-        run: ./gradlew test
-      - name: Check if code linting and unit tests passed
-        run: |
-          if [[ $? -eq 0 ]]; then
-            echo "Code linting and unit tests passed"
-          else
-            echo "Code lint
+          path: coverage/
+      - name: Verify code linting and unit tests
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const runs = await github.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo
