@@ -4,30 +4,40 @@ name: branch-protection.yml
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/main' }}
     steps:
       - name: Check for code changes
-        run: git diff --name-only ${{ github.event.before }} ${{ github.event.after }} > changed_files.txt
-      - name: Enforce requirements
-        if: ${{ steps.code_changes.outputs.has_changes == 'true' }}
         run: |
-          gradle build
-          gradle test
-          gradle jacocoTestReport
-        - name: Upload code coverage report
-          uses: actions/upload-artifact@v2
-          with:
-            name: code-coverage-report
-            path: ${{ github.workspace }}/build/reports/jacoco/test/html/index.html
-      - name: Verify linting and unit tests
-        if: ${{ steps.code_changes.outputs.has_changes == 'true' }}
+          if [[ `git diff --name-only HEAD HEAD^` ]]; then
+            echo "Code changes detected."
+          else
+            echo "No code changes detected. Skipping workflow."
+            exit 0
+          fi
+      - name: Download code coverage report
+        uses: actions/download-artifact@v2
+        with:
+          name: code-coverage-report
+      - name: Build with Gradle
         run: |
-          gradle lint
-          gradle test
-      - name: Fail workflow if requirements are not met
-        if: ${{ steps.code_changes.outputs.has
+          ./gradlew build
+      - name: Run code linting
+        run: |
+          ./gradlew lint
+      - name: Run unit tests
+        run: |
+          ./gradlew test
+      - name: Check for successful linting and tests
+        run: |
+          if [[ $? -eq 0 ]]; then
+            echo "Code linting and unit tests passed."
+          else
+            echo "Code linting or unit tests failed. Workflow failed."
+            exit 1
+          fi
+      - name: Fail workflow if requirements
