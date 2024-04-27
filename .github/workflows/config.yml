@@ -9,30 +9,28 @@ on:
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - name: Check for code changes
-        uses: actions/github-script@v4
+        uses: actions/github-script@v3
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const commits = await github.repos.listCommits({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: context.sha
-            })
-            const codeChanges = commits.data.some(commit => commit.stats.total > 0)
-            if (!codeChanges) {
-              core.setFailed("No code changes found in the pushed commit. Skipping branch rules enforcement.")
+            if (github.context.payload.commits.length > 0) {
+              console.log('Code changes detected.');
+            } else {
+              console.log('No code changes detected. Skipping workflow.');
+              process.exit(78);
             }
-      - name: Download code coverage report
-        uses: actions/download-artifact@v2
+      - name: Setup Gradle
+        if: ${{ contains(github.event.head_commit.modified, 'java') }}
+        run: sudo apt-get install gradle
+      - name: Run Gradle build
+        if: ${{ contains(github.event.head_commit.modified, 'java') }}
+        run: gradle build
+      - name: Upload code coverage report
+        uses: actions/upload-artifact@v2
+        if: ${{ contains(github.event.head_commit.modified, 'java') }}
         with:
           name: code-coverage-report
-          path: coverage/
-      - name: Verify code linting and unit tests
-        uses: actions/github-script@v4
-        with:
-          script: |
-            const runs = await github.actions.listWorkflowRuns({
-              owner: context.repo.owner,
-              repo: context.repo.repo
+          path: ./build/reports/coverage/index.html
+      - name: Run code
