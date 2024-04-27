@@ -1,37 +1,32 @@
 
+
 name: branch-protection.yml
+
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Check for code changes
-        run: |
-          if [[ `git diff HEAD^..HEAD` ]]; then
-            echo "Code changes detected"
-          else
-            echo "No code changes detected"
-            exit 1
-          fi
-      - name: Publish code coverage report
-        run: |
-          gradle jacocoTestReport
-          echo ::set-output name=coverage-report::./build/reports/jacoco/test/html/index.html
-        if: success()
-        id: coverage
-      - name: Build using Gradle
-        run: gradle build
-      - name: Code linting and unit tests
-        run: gradle lint test
-        if: success()
+        uses: actions/github-script@v3
+        with:
+          script: return context.payload.commits[0].added.length + context.payload.commits[0].removed.length + context.payload.commits[0].modified.length > 0
+        id: check-changes
+      - name: Generate code coverage report
+        if: steps.check-changes.outputs.result == 'true'
+        run: <command to generate code coverage report>
+        id: code-coverage
+      - name: Build with Gradle
+        if: steps.check-changes.outputs.result == 'true'
+        run: <command to build with Gradle>
+        id: gradle-build
+      - name: Run code linting and unit tests
+        if: steps.check-changes.outputs.result == 'true'
+        run: <command to run code linting and unit tests>
+        id: lint-test
       - name: Fail if requirements not met
-        run: |
-          if [[ ! -d "$coverage" ]]; then
-            echo "Code coverage report is not available"
-            exit 1
-          fi
-          if [[ $? -ne 
+        if: steps.check-changes.outputs.result == 'true' && (
