@@ -1,6 +1,8 @@
 
 
-name: branch-protection.yml
+branch-protection.yml:
+
+name: branch-protection
 
 on:
   push:
@@ -12,19 +14,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check for code changes
-        uses: actions/checkout@v2
+        uses: actions/github-script@v3
         with:
-          fetch-depth: 0
-      - name: Check code coverage
+          script: |
+            if (github.event.commits.length === 0) {
+              core.setFailed('No code changes were made.');
+            }
+      - name: Ensure code coverage report is available
         uses: actions/download-artifact@v2
         with:
-          name: code-coverage
+          name: code-coverage-report
+          path: code-coverage-report
       - name: Verify code linting and unit tests
-        uses: actions/download-artifact@v2
+        uses: actions/github-script@v3
         with:
-          name: code-linting-and-tests
-      - name: Fail if requirements not met
-        run: |
-          if [[ -z "${{ steps.code-coverage.outputs.artifact }}" || -z "${{ steps.code-linting-and-tests.outputs.artifact }}" ]]; then
-            exit 1
-          fi
+          script: |
+            if (github.event.workflow_runs != undefined) {
+              for (const run of github.event.workflow_runs) {
+                if (run.status !== 'completed' || run.conclusion !== 'success') {
+                  core.setFailed('Code linting or unit tests failed in a previous workflow.');
+                }
+              }
+            }
+      - name: Fail workflow if requirements are not met
+        if: ${{ failure() }}
+        run: exit 1
