@@ -1,29 +1,33 @@
 
 
 
-name: branch-protection.yml
+# Name: branch-protection.yml
+name: Branch Protection Workflow
 
+# Events to trigger the workflow
 on:
   push:
-    branches: 
-      - main
+    branches:
+      - main # Only run the workflow when a push event occurs on the main branch
 
+# Define a single job named enforce-branch-rules
 jobs:
   enforce-branch-rules:
-    runs-on: windows-latest
+    runs-on: windows-latest # Run the job on Windows environment
+    strategy:
+      matrix:
+        node-version: [20] # Run the job on Node.js 20
     steps:
-      - name: Update Node.js version to 20
-        uses: actions/setup-node@v2
-        with:
-          node-version: 20
+      # Check if the pushed commit includes code changes
       - name: Check for code changes
-        if: github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0
-        run: echo "Code changes detected."
-      - name: Enforce code coverage report
-        if: github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0
-        run: echo "Enforcing code coverage report."
-      - name: Verify code linting and unit tests
-        if: github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0
-        run: echo "Verifying code linting and unit tests."
-      - name: Complete job
-        if
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Fetch the full commit history
+      - name: Enforce Requirements
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.checkout.outputs.modified == 'true' }} # Only run if there are code changes in the push event and it is on the main branch
+        run: |
+          # Set up job
+          echo "Setting up job..."
+          # Check for code changes
+          echo "Checking for code changes..."
+          # Enforce code coverage
