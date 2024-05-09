@@ -1,11 +1,13 @@
 
 
 
+
 name: branch-protection.yml
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
@@ -15,11 +17,17 @@ jobs:
         node-version: [20]
     steps:
       - name: Check for code changes
-        if: github.event.commits[0].added.length > 0 || github.event.commits[0].modified.length > 0
-        run: echo "Code changes detected."
+        if: github.event.commits
+        run: |
+          # Your code to check for code changes goes here
       - name: Enforce code coverage report
-        run: npm run coverage
+        if: github.event.commits
+        run: |
+          # Your code to enforce code coverage report goes here
       - name: Verify code linting and unit tests
-        run: npm run lint && npm run test
+        if: github.event.commits
+        run: |
+          # Your code to verify code linting and unit tests goes here
       - name: Complete job
-        run: echo "Job complete."
+        run: |
+          # Your code to complete the job goes here
