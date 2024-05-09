@@ -1,31 +1,22 @@
 
 
 name: branch-protection.yml
-
 on:
   push:
-    branches: [main]
-
+    branches:
+      - main
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.added != '' }}
     steps:
+      - name: Setup job
+        run: echo "Starting job..."
       - name: Check for code changes
-        uses: actions/checkout@v2
+        run: git diff --quiet
       - name: Enforce code coverage report
-        if: github.event_name == 'push'
-        run: |
-          # insert code here to generate code coverage report
+        run: npm run coverage
       - name: Verify code linting and unit tests
-        if: github.event_name == 'push'
-        run: |
-          # insert code here to verify code linting and run unit tests
+        run: npm run lint && npm run test
       - name: Complete job
-        if: github.event_name == 'push' && success()
-        run: |
-          # insert code here to complete job
-      - name: Take own requirements
-        if: github.event_name == 'push'
-        run: |
-          # insert code here to take own requirements
-          # insert code here to run jobs successfully
+        run: echo "Job completed successfully."
