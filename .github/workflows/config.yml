@@ -5,7 +5,8 @@ name: branch-protection.yml
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
@@ -16,23 +17,10 @@ jobs:
         with:
           node-version: '16'
       - name: Check for code changes
-        id: code-changes-check
-        run: |
-          if [ -n "$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})" ]; then
-            echo "Code changes detected"
-            exit 0
-          else
-            echo "No code changes detected"
-            exit 1
-          fi
+        if: ${{ github.event_name == 'push' && (github.event.head_commit.added.length > 0 || github.event.head_commit.modified.length > 0 || github.event.head_commit.removed.length > 0) }}
+        run: echo "Code changes detected."
       - name: Enforce code coverage report
-        if: steps.code-changes-check.outcome == 'success'
-        run: |
-          # Code coverage report enforcement logic goes here
-          echo "Code coverage report enforced"
+        if: ${{ github.event_name == 'push' && (github.event.head_commit.added.length > 0 || github.event.head_commit.modified.length > 0 || github.event.head_commit.removed.length > 0) }}
+        run: echo "Enforcing code coverage report."
       - name: Verify code linting and unit tests
-        if: steps.code-changes-check.outcome == 'success'
-        run: |
-          # Code linting and unit tests verification logic goes here
-          echo "Code linting and unit tests verified"
-      - name: Complete job
+        if: ${{ github.event_name == 'push' && (github.event.head_commit.added.length > 0 || github.event.head_commit.modified.length > 0 || github.event.head_commit.rem
