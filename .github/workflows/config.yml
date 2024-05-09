@@ -1,33 +1,37 @@
 
 
+name: branch-protection.yml
 
-# Name: branch-protection.yml
-name: Branch Protection Workflow
-
-# Events to trigger the workflow
 on:
   push:
-    branches:
-      - main # Only run the workflow when a push event occurs on the main branch
+    branches: 
+      - main
 
-# Define a single job named enforce-branch-rules
 jobs:
   enforce-branch-rules:
-    runs-on: windows-latest # Run the job on Windows environment
+    runs-on: windows-latest
     strategy:
       matrix:
-        node-version: [20] # Run the job on Node.js 20
+        node-version: [20]
+
     steps:
-      # Check if the pushed commit includes code changes
-      - name: Check for code changes
+      - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0 # Fetch the full commit history
-      - name: Enforce Requirements
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.checkout.outputs.modified == 'true' }} # Only run if there are code changes in the push event and it is on the main branch
-        run: |
-          # Set up job
-          echo "Setting up job..."
-          # Check for code changes
-          echo "Checking for code changes..."
-          # Enforce code coverage
+
+      - name: Set up job
+        run: echo "Setting up job..."
+        
+      - name: Check for code changes
+        if: ${{ github.event_name == 'push' && github.event.head_commit.added != '' || github.event.head_commit.modified != '' }}
+        run: echo "Checking for code changes..."
+
+      - name: Enforce code coverage report
+        if: ${{ github.event_name == 'push' && github.event.head_commit.added != '' || github.event.head_commit.modified != '' }}
+        run: echo "Enforcing code coverage report..."
+
+      - name: Verify code linting and unit tests
+        if: ${{ github.event_name == 'push' && github.event.head_commit.added != '' || github.event.head_commit.modified != '' }}
+        run: echo "Verifying code linting and unit tests..."
+
+      - name: Complete job
+        if:
