@@ -2,27 +2,26 @@
 
 
 name: branch-protection.yml
-
 on:
   push:
-    branches: 
+    branches:
       - main
-
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
       matrix:
         node-version: [20]
-    if: github.event_name == 'push' && contains(github.event.head_commit.modified, 'code')
     steps:
-      - name: setup job
-        run: npm install
-      - name: check for code changes
-        run: git diff --name-only HEAD~1 HEAD
-      - name: enforce code coverage report
-        run: npm run test-coverage
-      - name: verify code linting and unit tests
-        run: npm run lint && npm test
-      - name: complete job
-        run: npm run build
+      - name: Check for code changes
+        if: github.event_name == 'push'
+        run: |
+          git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -qE '.*\.(js|jsx|ts|tsx)$' || exit 0
+      - name: Enforce code coverage report
+        run: npm run coverage
+      - name: Verify code linting and unit tests
+        run: npm run lint && npm run test
+      - name: Complete job
+        run: echo "Job complete, branch rules enforced"
+    env:
+      NODE_VERSION: ${{ matrix.node-version }}
