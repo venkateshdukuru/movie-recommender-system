@@ -4,7 +4,7 @@ name: branch-protection.yml
 
 on:
   push:
-    branches: 
+    branches:
       - main
 
 jobs:
@@ -13,25 +13,19 @@ jobs:
     strategy:
       matrix:
         node-version: [20]
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Set up job
-        run: echo "Setting up job..."
-        
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
       - name: Check for code changes
-        if: ${{ github.event_name == 'push' && github.event.head_commit.added != '' || github.event.head_commit.modified != '' }}
-        run: echo "Checking for code changes..."
-
+        run: |
+          if [[ `git diff --name-only HEAD~1 HEAD` ]]; then exit 0; else exit 1; fi
       - name: Enforce code coverage report
-        if: ${{ github.event_name == 'push' && github.event.head_commit.added != '' || github.event.head_commit.modified != '' }}
-        run: echo "Enforcing code coverage report..."
-
+        run: npm run coverage
       - name: Verify code linting and unit tests
-        if: ${{ github.event_name == 'push' && github.event.head_commit.added != '' || github.event.head_commit.modified != '' }}
-        run: echo "Verifying code linting and unit tests..."
-
+        run: npm run lint && npm test
       - name: Complete job
-        if:
+        run: echo "Job completed successfully."
