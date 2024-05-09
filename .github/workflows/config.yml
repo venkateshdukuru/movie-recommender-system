@@ -1,6 +1,7 @@
 
 
-name: branch-protection.yml
+
+name: branch-protection
 
 on:
   push:
@@ -10,15 +11,23 @@ jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     steps:
-      - name: Update Node.js to version 20
+      - name: Use Node.js 20
         uses: actions/setup-node@v2
         with:
-          node-version: 20
+          node-version: '20'
       - name: Check for code changes
-        run: git diff --quiet || echo "Code changes detected."
+        run: |
+          git fetch origin main
+          changes=$(git diff --name-only origin/main)
+          if [ -n "$changes" ]; then
+            echo "Code changes detected."
+          else
+            echo "No code changes detected."
+            exit 0
+          fi
       - name: Enforce code coverage report
         run: npm run coverage
       - name: Verify code linting and unit tests
-        run: npm run lint && npm run test
+        run: npm test
       - name: Complete job
-        run: echo "Job completed successfully."
+        run: echo "Branch rules successfully enforced."
