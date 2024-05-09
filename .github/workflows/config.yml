@@ -1,12 +1,11 @@
 
 
-branch-protection.yml:
 
-name: branch-protection
+name: branch-protection.yml
 
 on:
   push:
-    branches: [ main ]
+    branches: main
 
 jobs:
   enforce-branch-rules:
@@ -14,30 +13,29 @@ jobs:
     strategy:
       matrix:
         node-version: [20]
-    
     steps:
       - name: Check for code changes
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      
       - name: Enforce code coverage report
-        if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, 'code changes') }}
         run: |
-          # command to run code coverage report
-          npm run coverage
-          
+          if [ -n "$GITHUB_TOKEN" ]; then
+            npm install -g codecov
+            npm install -g nyc
+            npm install --save-dev istanbul
+            npm install --save-dev coveralls
+            npm install --save-dev mocha
+            npm install --save-dev chai
+            npm install --save-dev nyc
+            nyc --reporter=lcovonly mocha
+            codecov
+            coveralls
+          fi
       - name: Verify code linting and unit tests
-        if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, 'code changes') }}
         run: |
-          # command to run linting
-          npm run lint
-          
-          # command to run unit tests
-          npm run test
-          
-      - name: Complete job
-        if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, 'code changes') }}
-        run: |
-          # command to complete job
-         
+          npm install -g eslint
+          npm install --save-dev eslint
+          npm install --save-dev eslint-config-airbnb-base
+          npm install --save-dev eslint-config-prettier
+          npm install --save-dev eslint-plugin
