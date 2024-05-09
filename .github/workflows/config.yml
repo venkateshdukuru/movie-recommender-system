@@ -1,28 +1,24 @@
 
 
-
 name: branch-protection.yml
+
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     steps:
-      - name: check for code changes
-        if: github.event_name == 'push' && github.event.head_commit.added != '' && github.event.head_commit.removed != '' && github.event.head_commit.modified != ''
-        run: echo 'Code changes detected.'
-        # insert code to enforce requirements here
-      - name: install Node.js 20 actions are deprecated
-        run: echo 'Installing Node.js 20 actions are deprecated.'
-        # insert code to install Node.js 20 actions here
-      - name: enforce code coverage report
-        run: echo 'Enforcing code coverage report.'
-        # insert code to enforce code coverage report here
-      - name: verify code linting and unit tests
-        run: echo 'Verifying code linting and unit tests.'
-        # insert code to verify code linting and unit tests here
-      - name: complete job
-        run: echo 'Job completed successfully.'
-        # insert code to complete job here
+      - name: Update Node.js to version 20
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20
+      - name: Check for code changes
+        run: git diff --quiet || echo "Code changes detected."
+      - name: Enforce code coverage report
+        run: npm run coverage
+      - name: Verify code linting and unit tests
+        run: npm run lint && npm run test
+      - name: Complete job
+        run: echo "Job completed successfully."
