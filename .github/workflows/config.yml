@@ -1,18 +1,23 @@
 
 
 name: branch-protection.yml
+
 on:
   push:
-    branches: main
+    branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(github.event.head_commit.modified, '.py')
     steps:
+      - name: set up job
+        run: echo "Setting up job"
       - name: check for code changes
-        uses: actions/checkout@v2
+        run: git diff --exit-code --quiet HEAD^ HEAD
       - name: enforce code coverage report
-        run: npm run code-coverage
+        run: pytest --cov=./
       - name: verify code linting and unit tests
-        run: npm run lint && npm test
+        run: flake8 && pytest
       - name: complete job
-        run: echo "Job completed successfully!"
+        run: echo "Job completed successfully"
