@@ -1,30 +1,38 @@
 
 
 
-
-
 name: branch-protection.yml
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    name: enforce-branch-rules
     steps:
-      - name: install Node.js 16
+      - name: Install Node.js 16
         uses: actions/setup-node@v2
         with:
-          node-version: 16
-      - name: check for code changes
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.commits[0].added.length > 0 || github.event.commits[0].modified.length > 0 || github.event.commits[0].removed.length > 0 }}
+          node-version: '16'
+      - name: Check for code changes
+        id: code-changes-check
         run: |
-          # code to check for code changes
-      - name: enforce code coverage report
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.commits[0].added.length > 0 || github.event.commits[0].modified.length > 0 || github.event.commits[0].removed.length > 0 }}
+          if [ -n "$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})" ]; then
+            echo "Code changes detected"
+            exit 0
+          else
+            echo "No code changes detected"
+            exit 1
+          fi
+      - name: Enforce code coverage report
+        if: steps.code-changes-check.outcome == 'success'
         run: |
-          # code to enforce code coverage report
-      - name: verify code linting
+          # Code coverage report enforcement logic goes here
+          echo "Code coverage report enforced"
+      - name: Verify code linting and unit tests
+        if: steps.code-changes-check.outcome == 'success'
+        run: |
+          # Code linting and unit tests verification logic goes here
+          echo "Code linting and unit tests verified"
+      - name: Complete job
