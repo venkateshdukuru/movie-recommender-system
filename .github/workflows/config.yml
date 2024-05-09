@@ -15,12 +15,23 @@ jobs:
         node-version: [20]
     steps:
       - name: Check for code changes
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.commits[0].added, ${{ github.event.head_commit.added }}) }}
-        run: echo "Code changes detected."
+        if: github.event_name == 'push'
+        run: |
+          git diff --name-only ${{ github.event.before }} ${{ github.event.after }} > changes.txt
+          if [ -s changes.txt ]; then
+            echo "There are code changes."
+          else
+            echo "There are no code changes."
+          fi
       - name: Enforce code coverage report
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.commits[0].modified, ${{ github.event.head_commit.modified }}) }}
-        run: echo "Enforcing code coverage report."
+        if: steps.check-changes.outputs.code-changes == 'true'
+        run: |
+          # enter code coverage report command here
       - name: Verify code linting and unit tests
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.commits[0].modified, ${{ github.event.head_commit.modified }}) }}
-        run: echo "Verifying code linting and unit tests."
-      - name:
+        if: steps.check-changes.outputs.code-changes == 'true'
+        run: |
+          # enter code linting and unit tests command here
+      - name: Complete job
+        if: steps.check-changes.outputs.code-changes == 'true'
+        run: |
+          # enter any necessary commands to complete the job
