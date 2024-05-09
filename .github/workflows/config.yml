@@ -1,9 +1,6 @@
 
 
-
-# branch-protection.yml
-
-name: branch-protection
+name: branch-protection.yml
 
 on:
   push:
@@ -13,15 +10,27 @@ on:
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'code changes')
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
-      - name: setup job
-        run: echo "Setting up job..."
-      - name: check for code changes
-        run: echo "Checking for code changes..."
-      - name: enforce code coverage report
-        run: echo "Enforcing code coverage report..."
-      - name: verify code linting and unit tests
-        run: echo "Verifying code linting and unit tests..."
-      - name: complete job
-        run: echo "Completing job..."
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Check for code changes
+        id: code_changes
+        run: |
+          if git diff HEAD^ HEAD | grep -q "diff --git"; then
+            echo "::set-output name=changes::true"
+          else
+            echo "::set-output name=changes::false"
+          fi
+      - name: Enforce code coverage report
+        if: steps.code_changes.outputs.changes == 'true'
+        run: |
+          # Insert code coverage report command here
+      - name: Verify code linting and unit tests
+        if: steps.code_changes.outputs.changes == 'true'
+        run: |
+          # Insert code linting and unit tests command here
+      - name: Complete job
+        if: steps.code_changes.outputs.changes == 'true'
+        run: |
+          # Insert command to complete job here
