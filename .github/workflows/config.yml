@@ -1,7 +1,8 @@
 
 
+# branch-protection.yml
 
-name: branch-protection.yml
+name: branch-protection
 on:
   push:
     branches:
@@ -14,14 +15,10 @@ jobs:
         node-version: [20]
     steps:
       - name: Check for code changes
-        run: git diff --name-only HEAD HEAD~1
-        id: check_changes
+        run: git diff --name-only ${{ github.event.before }}..${{ github.event.after }}
       - name: Enforce code coverage report
-        if: steps.check_changes.outputs.return-code == 0
-        run: npm run test-coverage
+        run: npm run coverage
       - name: Verify code linting and unit tests
-        if: steps.check_changes.outputs.return-code == 0
         run: npm run lint && npm run test
       - name: Complete job
-        if: steps.check_changes.outputs.return-code == 0
         run: echo "Job completed successfully."
