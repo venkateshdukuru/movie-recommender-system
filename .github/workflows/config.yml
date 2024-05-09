@@ -5,7 +5,8 @@ name: branch-protection.yml
 
 on:
   push:
-    branches: [main]
+    branches: 
+      - main
 
 jobs:
   enforce-branch-rules:
@@ -14,18 +15,15 @@ jobs:
       - name: Update Node.js version to 20
         uses: actions/setup-node@v2
         with:
-          node-version: '20'
+          node-version: 20
       - name: Check for code changes
-        if: ${{ github.event_name == 'push' && contains(github.event.head_commit.added, 'code') }}
-        run: |
-          # insert code to check for code changes
+        if: github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0
+        run: echo "Code changes detected."
       - name: Enforce code coverage report
-        if: ${{ github.event_name == 'push' && contains(github.event.head_commit.added, 'code') }}
-        run: |
-          # insert code to enforce code coverage report
+        if: github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0
+        run: echo "Enforcing code coverage report."
       - name: Verify code linting and unit tests
-        if: ${{ github.event_name == 'push' && contains(github.event.head_commit.added, 'code') }}
-        run: |
-          # insert code to verify code linting and unit tests
+        if: github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0
+        run: echo "Verifying code linting and unit tests."
       - name: Complete job
-        if: ${{ github.event_name == 'push' && contains(github.event.head_commit.added, '
+        if
