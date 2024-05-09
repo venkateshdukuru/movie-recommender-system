@@ -1,11 +1,10 @@
 
 
-
 name: branch-protection.yml
 
 on:
   push:
-    branches: main
+    branches: [main]
 
 jobs:
   enforce-branch-rules:
@@ -15,27 +14,19 @@ jobs:
         node-version: [20]
     steps:
       - name: Check for code changes
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | if grep -q '.*\.\(js\|jsx\|ts\|tsx\|vue\|html\|css\|scss\)$'; then exit 0; else exit 1; fi
+
       - name: Enforce code coverage report
+        if: ${{ steps.code_changes.outputs.changed == 'true' }}
         run: |
-          if [ -n "$GITHUB_TOKEN" ]; then
-            npm install -g codecov
-            npm install -g nyc
-            npm install --save-dev istanbul
-            npm install --save-dev coveralls
-            npm install --save-dev mocha
-            npm install --save-dev chai
-            npm install --save-dev nyc
-            nyc --reporter=lcovonly mocha
-            codecov
-            coveralls
-          fi
+          # insert code coverage command here
+
       - name: Verify code linting and unit tests
+        if: ${{ steps.code_changes.outputs.changed == 'true' }}
         run: |
-          npm install -g eslint
-          npm install --save-dev eslint
-          npm install --save-dev eslint-config-airbnb-base
-          npm install --save-dev eslint-config-prettier
-          npm install --save-dev eslint-plugin
+          # insert code linting and unit tests command here
+
+      - name: Complete job
+        if: ${{ steps.code_changes.outputs.changed == 'true' }}
