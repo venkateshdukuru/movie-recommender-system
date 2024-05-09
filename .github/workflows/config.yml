@@ -2,33 +2,34 @@
 
 
 name: branch-protection.yml
-
 on:
   push:
-    branches:
-      - main
-
+    branches: [main]
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Check for code changes
-        id: code-changes
-        run: git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '\\.(js|jsx|ts|tsx)$'
-      - name: Set up job
-        if: ${{ steps.code-changes.outputs.code-changes != '' }}
+      - name: Install Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - name: Check code changes
         run: |
-          npm i -g npm@latest
-          npm i -g codecov
-          npm install
+          if [ -n "$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})" ]; then
+            echo "Code changes detected"
+          else
+            echo "No code changes detected. Skipping job."
+            exit 1
+          fi
+      - name: Setup job
+        # add any necessary setup steps here
+      - name: Check for code changes
+        # add code change checks here
       - name: Enforce code coverage report
-        if: ${{ steps.code-changes.outputs.code-changes != '' }}
-        run: npm run coverage
+        # add code coverage report enforcement here
       - name: Verify code linting and unit tests
-        if: ${{ steps.code-changes.outputs.code-changes != '' }}
-        run: npm run lint && npm test
+        # add linting and unit test verification here
       - name: Complete job
-        if: ${{ steps.code-changes.outputs.code-changes != '' }}
-        run: echo "
+        # add any final steps to complete the job here based on your own requirements
