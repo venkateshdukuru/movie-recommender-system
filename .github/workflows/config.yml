@@ -1,31 +1,34 @@
 
----
-name: branch-protection
+
+
+name: branch-protection.yml
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     steps:
-      - name: Install Node.js
-        uses: actions/setup-node@v2.3.0
-        with:
-          node-version: '16'
-      
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Check for code changes
-        if: ${{ github.event_name == 'push' && contains(github.event.commits[0].modified, 'code') }}
-        run: echo "Code changes detected."
-
+        id: code-changes
+        run: git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '\\.(js|jsx|ts|tsx)$'
+      - name: Set up job
+        if: ${{ steps.code-changes.outputs.code-changes != '' }}
+        run: |
+          npm i -g npm@latest
+          npm i -g codecov
+          npm install
       - name: Enforce code coverage report
-        if: ${{ github.event_name == 'push' && contains(github.event.commits[0].modified, 'code') }}
-        run: echo "Enforcing code coverage report."
-
+        if: ${{ steps.code-changes.outputs.code-changes != '' }}
+        run: npm run coverage
       - name: Verify code linting and unit tests
-        if: ${{ github.event_name == 'push' && contains(github.event.commits[0].modified, 'code') }}
-        run: echo "Verifying code linting and unit tests."
-
+        if: ${{ steps.code-changes.outputs.code-changes != '' }}
+        run: npm run lint && npm test
       - name: Complete job
-        if: ${{ github.event_name == 'push' && contains(github.event.commits[0].modified, 'code') }}
+        if: ${{ steps.code-changes.outputs.code-changes != '' }}
+        run: echo "
