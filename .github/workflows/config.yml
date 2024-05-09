@@ -1,25 +1,31 @@
 
 
-Name: branch-protection.yml
+
+name: branch-protection.yml
+
 on:
   push:
     branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Node.js
+      - name: Check for code changes
+        id: code-changes
+        run: echo "Checking for code changes"
+      - name: Install Node.js 16
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
-      - name: Check for code changes
-        if: ${{ github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0 }}
-        run: echo "Code changes detected."
+          node-version: 16
       - name: Enforce code coverage report
-        if: ${{ github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0 }}
-        run: echo "Enforcing code coverage report."
+        if: steps.code-changes.outputs.code-changes == 'true'
+        run: echo "Enforcing code coverage report"
       - name: Verify code linting and unit tests
-        if: ${{ github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0 }}
-        run: echo "Verifying code linting and unit tests."
+        if: steps.code-changes.outputs.code-changes == 'true'
+        run: echo "Verifying code linting and unit tests"
       - name: Complete job
-        if
+        if: steps.code-changes.outputs.code-changes == 'true'
+        run: echo "Job completed successfully"
+      - name: Final job
+        run: echo "Your own requirements to run jobs successfully"
