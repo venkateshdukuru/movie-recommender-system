@@ -1,6 +1,5 @@
 
 
-
 name: branch-protection.yml
 
 on:
@@ -11,15 +10,25 @@ on:
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
-      - name: Checkout code
+      - name: set up job
         uses: actions/checkout@v2
-      - name: Check for code changes
-        run: git diff --exit-code
-      - name: Enforce code coverage report
-        run: #insert code coverage command here
-      - name: Verify code linting and unit tests
-        run: #insert linting and unit test commands here
-      - name: Complete job
-        run: exit 0
+        with:
+          fetch-depth: 0
+      - name: check for code changes
+        run: |
+          if [[ `git diff HEAD^ HEAD` ]]; then
+            echo "Code changes detected."
+          else
+            echo "No code changes detected. Skipping job."
+            exit 1
+      - name: enforce code coverage report
+        run: |
+          # insert code coverage report command here
+      - name: verify code linting and unit tests
+        run: |
+          # insert code linting and unit tests command here
+      - name: complete job
+        run: |
+          echo "Job complete."
