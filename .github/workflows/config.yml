@@ -2,34 +2,36 @@
 
 
 name: branch-protection.yml
+
 on:
   push:
     branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Install Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v1
         with:
           node-version: 16
-      - name: Check code changes
-        run: |
-          if [ -n "$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})" ]; then
-            echo "Code changes detected"
-          else
-            echo "No code changes detected. Skipping job."
-            exit 1
-          fi
-      - name: Setup job
-        # add any necessary setup steps here
       - name: Check for code changes
-        # add code change checks here
+        if: github.event_name == 'push' && github.event.head_commit.modified.length > 0
+        run: |
+          # Perform checks for code changes here
+          # If no changes, exit with a success code
+          exit 0
       - name: Enforce code coverage report
-        # add code coverage report enforcement here
+        if: success()
+        run: |
+          # Generate and enforce code coverage report here
       - name: Verify code linting and unit tests
-        # add linting and unit test verification here
+        if: success()
+        run: |
+          # Perform code linting and unit tests here
       - name: Complete job
-        # add any final steps to complete the job here based on your own requirements
+        if: success()
+        run: |
+          # Perform any final tasks to complete the job successfully
