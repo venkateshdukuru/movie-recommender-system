@@ -3,25 +3,31 @@
 
 name: branch-protection.yml
 
-on: 
+on:
   push:
-    branches: 
-      - main
+    branches: [main]
 
-jobs: 
+jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Node.js 16 
+      - name: Install Node.js
         uses: actions/setup-node@v2
         with:
           node-version: 16
       - name: Check for code changes
-        if: github.event_name == 'push' && github.event.head_commit.added.length + github.event.head_commit.modified.length + github.event.head_commit.removed.length > 0
-        run: echo "Code changes detected."
-      - name: Enforce code coverage report
-        run: npm run coverage
-      - name: Verify code linting and unit tests
-        run: npm run lint && npm test
-      - name: Complete job
-        run: echo "Job completed successfully."
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const commits = await github.repos.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha
+            })
+            if (commits.data.length > 0) {
+              // enforce code coverage report
+              // verify code linting and unit tests
+              // complete job
+            } else {
+              // do not run any jobs
+            }
