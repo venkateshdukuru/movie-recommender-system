@@ -1,32 +1,30 @@
 
 
-name: branch-protection.yml
 
+name: branch-protection
 on:
   push:
-    branches: [main]
-
+    branches:
+      - main
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
       matrix:
-        node-version: [20]
+        node-version: [20.x]
     steps:
       - name: Check for code changes
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ github.event_name == 'push' }}
         run: |
-          git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | if grep -q '.*\.\(js\|jsx\|ts\|tsx\|vue\|html\|css\|scss\)$'; then exit 0; else exit 1; fi
-
+          git diff --name-only ${{ github.event.before }} ${{ github.event.after }}
       - name: Enforce code coverage report
-        if: ${{ steps.code_changes.outputs.changed == 'true' }}
+        if: ${{ steps.check_code_changes.outputs.code_changes == 'true' }}
         run: |
-          # insert code coverage command here
-
+          # insert code coverage report command here
       - name: Verify code linting and unit tests
-        if: ${{ steps.code_changes.outputs.changed == 'true' }}
+        if: ${{ steps.check_code_changes.outputs.code_changes == 'true' }}
         run: |
           # insert code linting and unit tests command here
-
       - name: Complete job
-        if: ${{ steps.code_changes.outputs.changed == 'true' }}
+        run: |
+          # insert any remaining commands here to complete the job
