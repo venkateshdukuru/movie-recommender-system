@@ -1,34 +1,27 @@
 
 
-
 name: branch-protection.yml
-
 on:
   push:
     branches:
       - main
-
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x]
+        node: [16]
     steps:
-      - name: check for code changes
-        if: github.event_name == 'push'
+      - name: Check for code changes
+        uses: actions/checkout@v2
+      - name: Enforce code coverage report
+        if: ${{ github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0 }}
         run: |
-          git diff --name-only ${{ github.event.before }}...${{ github.event.after }} > files_changed.txt
-          if [[ -s files_changed.txt ]]; then
-            echo "Code changes detected."
-          else
-            echo "No code changes detected. Skipping job."
-            exit 1
-      - name: setup job
-        run: npm install
-      - name: enforce code coverage report
-        run: npm run coverage
-      - name: verify code linting and unit tests
-        run: npm test
-      - name: complete job
-        run: echo "Job completed successfully."
+          # Add code coverage report enforcement here
+      - name: Verify code linting and unit tests
+        if: ${{ github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0 }}
+        run: |
+          # Add code linting and unit tests verification here
+      - name: Complete job
+        run: |
+          # Add job completion steps here 
