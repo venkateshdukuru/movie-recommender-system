@@ -1,26 +1,28 @@
 
 
-name: branch-protection.yml
+Name: branch-protection.yml
+
 on:
   push:
-    branches: [main]
+    branches: 
+      - main
+
 jobs:
   enforce-branch-rules:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/setup-node@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: 16
       - name: Check for code changes
-        id: check-changes
-        run: echo "Checking for code changes..."
-        if: github.event_name == 'push'
+        run: git diff --quiet || exit 1
       - name: Enforce code coverage report
-        run: echo "Enforcing code coverage report..."
-        if: steps.check-changes.outputs.code-changes == 'true'
+        run: npm run coverage
       - name: Verify code linting and unit tests
-        run: echo "Verifying code linting and unit tests..."
-        if: steps.check-changes.outputs.code-changes == 'true'
+        run: npm run lint && npm test
       - name: Complete job
-        run: echo "Job completed successfully!"
-        if: steps.check-changes.outputs.code-changes == 'true'
+        run: echo "Job completed successfully"
