@@ -1,7 +1,7 @@
 
 
 
-name: branch-protection.yml
+name: branch-protection
 on:
   push:
     branches:
@@ -16,12 +16,16 @@ jobs:
       - name: Check for code changes
         if: github.event_name == 'push'
         run: |
-          git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -qE '.*\.(js|jsx|ts|tsx)$' || exit 0
+          git diff --name-only ${{ github.base_ref }}...${{ github.head_ref }}
+          if [ $? -eq 0 ]; then
+            echo "There are code changes"
+          else
+            echo "There are no code changes"
+            exit 1
+          fi
       - name: Enforce code coverage report
-        run: npm run coverage
+        run: ./enforce-coverage-report.sh
       - name: Verify code linting and unit tests
-        run: npm run lint && npm run test
+        run: ./verify-linting-and-unit-tests.sh
       - name: Complete job
-        run: echo "Job complete, branch rules enforced"
-    env:
-      NODE_VERSION: ${{ matrix.node-version }}
+        run: echo "Job completed successfully"
