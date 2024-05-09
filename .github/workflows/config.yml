@@ -2,24 +2,21 @@
 
 
 name: branch-protection.yml
-
 on:
   push:
-    branches: [main]
-
+    branches: main
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Check for code changes
-        uses: actions/checkout@v2
-      - name: Enforce code coverage report
+        if: github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0
         run: |
-          # Code coverage report command
-      - name: Verify code linting and unit tests
-        run: |
-          # Code linting and unit tests command
+          # set up job
+          # check for code changes
+          # enforce code coverage report
+          # verify code linting and unit tests
+          # complete job
       - name: Complete job
-        run: |
-          # Job completion command
+        if: github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length == 0
+        run: echo "No code changes found, skipping job."
