@@ -1,5 +1,8 @@
 
 
+
+
+
 name: branch-protection.yml
 
 on:
@@ -10,27 +13,18 @@ on:
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.x]
+    name: enforce-branch-rules
     steps:
-      - uses: actions/checkout@v2
-      - name: Check for code changes
-        run: git diff --name-only ${{ github.event.before }} ${{ github.sha }}
-        id: changes
-      - if: steps.changes.outputs.stdout != ''
-        name: Enforce requirements
+      - name: install Node.js 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - name: check for code changes
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.commits[0].added.length > 0 || github.event.commits[0].modified.length > 0 || github.event.commits[0].removed.length > 0 }}
         run: |
-          # Setup job
-          echo "Setting up job"
-          # Check for code changes
-          echo "Checking for code changes"
-          # Enforce code coverage report
-          echo "Enforcing code coverage report"
-          # Verify code linting and unit tests
-          echo "Verifying code linting and unit tests"
-          # Complete job
-          echo "Job completed"
-      - if: steps.changes.outputs.stdout == ''
-        name: No code changes
-        run: echo "No code changes detected, skipping job"
+          # code to check for code changes
+      - name: enforce code coverage report
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.commits[0].added.length > 0 || github.event.commits[0].modified.length > 0 || github.event.commits[0].removed.length > 0 }}
+        run: |
+          # code to enforce code coverage report
+      - name: verify code linting
