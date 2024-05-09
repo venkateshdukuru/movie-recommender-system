@@ -1,36 +1,30 @@
 
 
+
 name: branch-protection.yml
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: github.event_name == 'push'
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Check for code changes
-        id: code_changes
+        run: git diff --quiet || exit 1
+      - name: Set up job
         run: |
-          if git diff HEAD^ HEAD | grep -q "diff --git"; then
-            echo "::set-output name=changes::true"
-          else
-            echo "::set-output name=changes::false"
-          fi
+          # insert commands to set up job
       - name: Enforce code coverage report
-        if: steps.code_changes.outputs.changes == 'true'
         run: |
-          # Insert code coverage report command here
+          # insert commands to enforce code coverage report
       - name: Verify code linting and unit tests
-        if: steps.code_changes.outputs.changes == 'true'
         run: |
-          # Insert code linting and unit tests command here
+          # insert commands to verify code linting and unit tests
       - name: Complete job
-        if: steps.code_changes.outputs.changes == 'true'
         run: |
-          # Insert command to complete job here
+          # insert commands to complete job
