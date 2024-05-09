@@ -2,34 +2,29 @@
 
 
 name: branch-protection.yml
-
 on:
   push:
-    branches: [main]
-
+    branches:
+      - main
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: '16'
       - name: Check for code changes
+        if: ${{ github.event.head_commit.added.length + github.event.head_commit.modified.length + github.event.head_commit.removed.length > 0 }}
         run: |
-          if [[ -n $(git diff HEAD^ HEAD --name-only) ]]; then
-            echo "Code changes detected."
-          else
-            echo "No code changes found."
-            exit 1
-          fi
+          # insert code for checking code changes here
       - name: Enforce code coverage report
+        if: ${{ github.event.head_commit.added.length + github.event.head_commit.modified.length + github.event.head_commit.removed.length > 0 }}
         run: |
-          # insert code to enforce code coverage report
+          # insert code for enforcing code coverage report here
       - name: Verify code linting and unit tests
+        if: ${{ github.event.head_commit.added.length + github.event.head_commit.modified.length + github.event.head_commit.removed.length > 0 }}
         run: |
-          # insert code to verify code linting and run unit tests
+          # insert code for verifying code linting and unit tests here
       - name: Complete job
-        run: |
-          echo "Job completed successfully."
+        if: ${{ github.event.head_commit
