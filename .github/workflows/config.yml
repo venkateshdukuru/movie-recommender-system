@@ -2,32 +2,35 @@
 
 
 name: branch-protection.yml
-
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: github.event_name == 'push' && contains(github.event.head_commit.modified, 'code')
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Check for code changes
+      - name: set up job
         run: |
-          if git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep -q '.*\.py$'; then
-            echo "Code changes detected. Enforcing branch rules."
-          else
-            echo "No code changes detected. Skipping branch rules."
-            exit 1
-          fi
-      - name: Enforce code coverage report
+          # set up job code goes here
+
+      - name: check for code changes
         run: |
-          # insert code coverage report command here
-      - name: Verify code linting and unit tests
+          # code change check code goes here
+
+      - name: enforce code coverage report
         run: |
-          # insert code linting and unit tests command here
-      - name: Complete job
-        run: echo "Branch rules successfully enforced."
+          # code coverage enforcement code goes here
+
+      - name: verify code linting and unit tests
+        run: |
+          # code linting and unit test verification code goes here
+
+      - name: complete job
+        run: |
+          # job completion code goes here
+
+      - name: take your own requirements and generate to run jobs successfully
+        run: |
+          # custom code to run jobs successfully goes here
