@@ -1,5 +1,6 @@
 
 
+
 name: branch-protection.yml
 
 on:
@@ -13,12 +14,16 @@ jobs:
     strategy:
       matrix:
         node-version: [20]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.added.length > 0 || github.event.head_commit.modified.length > 0
     steps:
-      - name: check for code changes
-        if: ${{ github.event_name == 'push' && contains(github.event.head_commit.modified, 'code') }}
-        run: echo "Code changes detected."
-        # place suitable enforce rules here
-        # setup job
-        # enforce code coverage report
-        # verify code linting and unit tests
-        # complete job
+      - name: Check for code changes
+        uses: actions/checkout@v2
+      - name: Enforce code coverage report
+        run: |
+          # insert code to enforce code coverage report here
+      - name: Verify code linting and unit tests
+        run: |
+          # insert code to verify code linting and unit tests here
+      - name: Complete job
+        run: |
+          # insert code to complete job here
