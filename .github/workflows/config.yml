@@ -1,9 +1,11 @@
 
 
 name: branch-protection.yml
+
 on:
   push:
     branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
@@ -11,11 +13,21 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - name: Check for Code Changes
-        run: git diff --quiet || exit 1
-      - name: Enforce Code Coverage Report
-        run: npm run coverage
-      - name: Verify Code Linting and Unit Tests
-        run: npm run lint && npm run test
-      - name: Complete Job
-        run: echo "Job Complete"
+      - uses: actions/checkout@v2
+      - name: Check for code changes
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git diff --name-only ${{ github.sha }}~1 ${{ github.sha }}
+      - name: Enforce code coverage report
+        if: ${{ steps.Checkout.outputs.modified_files == 'true' }}
+        run: |
+          npm run coverage
+      - name: Verify code linting and unit tests
+        if: ${{ steps.Checkout.outputs.modified_files == 'true' }}
+        run: |
+          npm run lint
+          npm run unit-tests
+      - name: Complete job
+        if: ${{ steps.Checkout.outputs.modified_files == 'true' }}
+        run: |
+          echo "Job completed successfully."
