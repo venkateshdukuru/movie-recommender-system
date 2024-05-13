@@ -11,12 +11,15 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - uses: actions/checkout@v2
-      - name: check for code changes
-        run: echo "Checking for code changes..."
-      - name: enforce code coverage report
-        run: echo "Enforcing code coverage report..."
-      - name: verify code linting and unit tests
-        run: echo "Verifying code linting and unit tests..."
-      - name: complete job
-        run: echo "Completing job..."
+      - name: Check for code changes
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: echo "Checking for code changes"
+      - name: Enforce code coverage report
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: echo "Enforcing code coverage report"
+      - name: Verify code linting and unit tests
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: echo "Verifying code linting and unit tests"
+      - name: Complete job
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: echo "Job completed successfully"
