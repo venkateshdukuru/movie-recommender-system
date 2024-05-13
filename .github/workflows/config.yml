@@ -1,6 +1,5 @@
 
 
-
 name: branch-protection.yml
 on:
   push:
@@ -11,16 +10,12 @@ jobs:
     strategy:
       matrix:
         node-version: [20]
-        java-version: [maven]
     steps:
-      - name: Check for code changes
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: echo "Checking for code changes..."
-      - name: Enforce code coverage report
-        if: ${{ steps.code_changes.outputs.has_changes == 'true' }}
-        run: echo "Enforcing code coverage report..."
-      - name: Verify code linting and unit tests
-        if: ${{ steps.code_changes.outputs.has_changes == 'true' }}
-        run: echo "Verifying code linting and unit tests..."
-      - name: Complete job
-        run: echo "Job completed successfully."
+      - name: check-for-code-changes
+        uses: actions/checkout@v2
+      - name: enforce-code-coverage-report
+        run: npm test --coverage
+      - name: verify-code-linting-and-unit-tests
+        run: npm run lint && npm test
+      - name: complete-job
+        run: npm install && npm start
