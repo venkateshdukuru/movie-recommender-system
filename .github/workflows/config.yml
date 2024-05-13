@@ -1,35 +1,27 @@
 
-name: branch-protection.yml
 
+name: branch-protection.yml
 on:
   push:
     branches:
       - main
-
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
       matrix:
         node-version: [20]
-
     steps:
-      - name: Checkout code
+      - name: Check for code changes
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
-      - name: Check for code changes
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.modified.length > 0 }}
-        run: echo "There are code changes"
-
       - name: Enforce code coverage report
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.modified.length > 0 }}
-        run: echo "Enforcing code coverage report"
-
+        run: |
+          #code to enforce code coverage report
       - name: Verify code linting and unit tests
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.modified.length > 0 }}
-        run: echo "Verifying code linting and unit tests"
-
+        run: |
+          #code to verify code linting and unit tests
       - name: Complete job
-        if: $
+        run: |
+          #code to complete job
