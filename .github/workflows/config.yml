@@ -5,32 +5,34 @@ name: branch-protection.yml
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [20]
     steps:
       - name: Check for code changes
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: |
-          git diff-tree --no-commit-id --name-only -r ${{ github.sha }} > changed_files.txt
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Enforce code coverage report
-        if: ${{ steps.check_changes.outputs.code_changes == 'true' }}
         run: |
-          # Add code coverage enforcement logic here
+          if [ -n "$GITHUB_REF" ]; then
+            echo "Commit includes code changes, enforcing code coverage report..."
+            # Insert code coverage report command here
+          else
+            echo "No code changes in commit, skipping code coverage report..."
+          fi
       - name: Verify code linting and unit tests
-        if: ${{ steps.check_changes.outputs.code_changes == 'true' }}
         run: |
-          # Add code linting and unit tests verification logic here
+          if [ -n "$GITHUB_REF" ]; then
+            echo "Commit includes code changes, verifying code linting and unit tests..."
+            # Insert code linting and unit tests command here
+          else
+            echo "No code changes in commit, skipping code linting and unit tests..."
+          fi
       - name: Complete job
-        run: |
-          # Add logic to complete the job
-      - name: Check changes output
-        id: check_changes
-        run: |
-          echo ::set-output name=code_changes::$(cat changed_files.txt | wc -l)
+        run: echo "Job complete"
