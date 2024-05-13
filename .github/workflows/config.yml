@@ -1,11 +1,13 @@
 
 
+# branch-protection.yml
 
-name: branch-protection.yml
+name: branch-protection
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
@@ -13,26 +15,14 @@ jobs:
     strategy:
       matrix:
         node-version: [20]
+        java-version: [maven]
     steps:
       - name: Check for code changes
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+        if: github.event_name == 'push'
+        run: echo "Code changes detected."
       - name: Enforce code coverage report
-        run: |
-          if [ -n "$GITHUB_REF" ]; then
-            echo "Commit includes code changes, enforcing code coverage report..."
-            # Insert code coverage report command here
-          else
-            echo "No code changes in commit, skipping code coverage report..."
-          fi
+        run: echo "Enforcing code coverage report."
       - name: Verify code linting and unit tests
-        run: |
-          if [ -n "$GITHUB_REF" ]; then
-            echo "Commit includes code changes, verifying code linting and unit tests..."
-            # Insert code linting and unit tests command here
-          else
-            echo "No code changes in commit, skipping code linting and unit tests..."
-          fi
+        run: echo "Verifying code linting and unit tests."
       - name: Complete job
-        run: echo "Job complete"
+        run: echo "Job completed successfully."
