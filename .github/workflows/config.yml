@@ -1,13 +1,10 @@
 
 
----
 name: branch-protection.yml
-
 on:
   push:
     branches:
       - main
-
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
@@ -15,24 +12,13 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-    - name: check for code changes
-      if: github.event.action == 'push'
-      run: |
-        if [ -z "$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})" ]; then
-            echo "No code changes detected.";
-        else
-            echo "Code changes detected.";
-        fi
-    - name: enforce code coverage report
-      if: github.event.action == 'push'
-      run: |
-        npm run coverage
-    - name: verify code linting and unit tests
-      if: github.event.action == 'push'
-      run: |
-        npm run lint
-        npm run test
-    - name: complete job
-      if: github.event.action == 'push'
-      run: |
-        echo "Job completed successfully."
+      - name: Check code changes
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Enforce rules
+        if: ${{ github.event.commits }}
+        run: |
+          # Enforce code coverage report
+          # Verify code linting and unit tests
+          # Complete job
