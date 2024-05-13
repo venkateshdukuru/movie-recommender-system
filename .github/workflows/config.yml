@@ -13,11 +13,21 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - name: check for code changes
+      - name: Checkout code
         uses: actions/checkout@v2
-      - name: enforce code coverage report
-        run: mvn verify
-      - name: verify code linting and unit tests
+      - name: Setup Node.js
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Setup Maven
+        uses: actions/setup-java@v1
+        with:
+          java-version: '11.x'
+      - name: Check for code changes
+        run: git diff --exit-code
+      - name: Enforce code coverage report
+        run: mvn jacoco:report
+      - name: Verify code linting and unit tests
         run: npm test
-      - name: complete job
-        run: echo "Job completed successfully"
+      - name: Complete job
+        run: echo "Job complete."
