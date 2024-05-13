@@ -4,6 +4,7 @@ name: branch-protection.yml
 on:
   push:
     branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
@@ -11,15 +12,13 @@ jobs:
       matrix:
         node-version: [20]
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Check for code changes
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: echo "Checking for code changes"
+        run: git diff --quiet || exit 1
       - name: Enforce code coverage report
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: echo "Enforcing code coverage report"
+        run: <insert code coverage command here>
       - name: Verify code linting and unit tests
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: echo "Verifying code linting and unit tests"
+        run: <insert linting and unit test commands here>
       - name: Complete job
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: echo "Job completed successfully"
+        run: <insert job completion command here>
