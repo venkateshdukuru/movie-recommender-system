@@ -1,32 +1,32 @@
 
 
 name: branch-protection.yml
-
 on:
   push:
     branches: [main]
-
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
       matrix:
         node-version: [20]
-    
     steps:
-      - name: Check for code changes
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      
-      - name: Enforce code coverage report
-        run: |
-          # Insert code coverage report command here
-    
-      - name: Verify code linting and unit tests
-        run: |
-          # Insert code linting and unit tests command here
-    
-      - name: Complete job
-        run: |
-          # Insert code to complete job here
+    - name: Check for code changes
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Enforce code coverage report
+      run: |
+        npm install -g istanbul
+        istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec
+        npm install -g codecov
+        codecov
+    - name: Verify code linting and unit tests
+      run: |
+        npm install -g eslint
+        eslint ./src --fix
+        npm install -g mocha
+        mocha ./tests
+    - name: Complete job
+      run: |
+        echo "Job completed successfully!"
