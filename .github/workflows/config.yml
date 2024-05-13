@@ -1,13 +1,11 @@
 
 
-# branch-protection.yml
 
-name: branch-protection
+name: branch-protection.yml
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   enforce-branch-rules:
@@ -15,14 +13,15 @@ jobs:
     strategy:
       matrix:
         node-version: [20]
-        java-version: [maven]
     steps:
       - name: Check for code changes
-        if: github.event_name == 'push'
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.commits[0].modified, '.js') }}
         run: echo "Code changes detected."
       - name: Enforce code coverage report
-        run: echo "Enforcing code coverage report."
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.commits[0].modified, '.java') }}
+        run: mvn test jacoco:report
       - name: Verify code linting and unit tests
-        run: echo "Verifying code linting and unit tests."
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.commits[0].modified, '.js') }}
+        run: npm run lint && npm test
       - name: Complete job
-        run: echo "Job completed successfully."
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main
