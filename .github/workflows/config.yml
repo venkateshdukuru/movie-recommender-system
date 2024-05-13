@@ -1,28 +1,32 @@
 
 
-
 name: branch-protection.yml
-
 on:
   push:
-    branches:
-      - main
-
+    branches: [main]
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [20]
     steps:
       - name: Check for code changes
-        if: github.event_name == 'push' && github.event.head_commit.added.length + github.event.head_commit.modified.length + github.event.head_commit.removed.length > 0
-        run: echo "Code changes detected"
+        if: github.event_name == 'push'
+        run: |
+          git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -E '*.js|*.jsx|*.ts|*.tsx' | xargs -I{} sh -c "echo {} ; npx tsc -p {}"
       - name: Enforce code coverage report
-        if: github.event_name == 'push' && github.event.head_commit.added.length + github.event.head_commit.modified.length + github.event.head_commit.removed.length > 0
-        run: echo "Enforcing code coverage report"
+        if: success()
+        run: |
+          npm install -g c8
+          npm run test
+          c8 report --reporter=text
       - name: Verify code linting and unit tests
-        if: github.event_name == 'push' && github.event.head_commit.added.length + github.event.head_commit.modified.length + github.event.head_commit.removed.length > 0
-        run: echo "Verifying code linting and unit tests"
+        if: always()
+        run: |
+          npm run lint
+          npm run test
       - name: Complete job
-        if: github.event_name == 'push' && github.event.head_commit.added.length
+        if: success()
+        run: |
+          echo "Job completed successfully."
