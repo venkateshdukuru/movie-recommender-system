@@ -1,13 +1,9 @@
 
 
-# branch-protection.yml
-
-name: Branch Protection Workflow
-
+name: branch-protection.yml
 on:
   push:
     branches: [main]
-
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
@@ -15,20 +11,24 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - name: Check for Code Changes
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Enforce Branch Rules
-        if: ${{ github.event_name == 'push' }}
+      - name: Check for code changes
+        if: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/main' }}
         run: |
-          # Code to enforce rules based on information provided
-          # such as setting up job, checking for code changes, enforcing code coverage report, verifying code linting and unit tests, and completing job
-          # Please replace with actual code based on specific requirements
-          echo "Enforcing Branch Rules"
-        shell: bash
-      - name: Complete Job
+          if git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep -q -E '.*\.(js|jsx|ts|tsx)$'; then
+              echo "Code changes detected."
+          else
+              echo "No code changes detected. Skipping job."
+              exit 1
+          fi
+      - name: Enforce code coverage report
+        if: ${{ success() }}
         run: |
-          # Code to complete job
-          echo "Job completed successfully"
-        shell: bash
+          # Command to enforce code coverage report
+          # Example: npm run test:coverage
+      - name: Verify code linting and unit tests
+        if: ${{ success() }}
+        run: |
+          # Command to verify code linting and unit tests
+          # Example: npm run lint && npm run test
+      - name: Complete job
+        if
