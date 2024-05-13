@@ -1,10 +1,11 @@
 
 
 name: branch-protection.yml
+
 on:
   push:
     branches: [main]
-
+    
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
@@ -12,13 +13,11 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
       - name: Check for code changes
-        run: git diff --quiet || exit 1
+        run: git diff --name-only ${{ github.event.before }}..${{ github.event.after }}
       - name: Enforce code coverage report
-        run: <insert code coverage command here>
+        run: npm run test-with-coverage
       - name: Verify code linting and unit tests
-        run: <insert linting and unit test commands here>
+        run: npm run lint && npm run test
       - name: Complete job
-        run: <insert job completion command here>
+        run: echo "All checks passed, job completed successfully."
