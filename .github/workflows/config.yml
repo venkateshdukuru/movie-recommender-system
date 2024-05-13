@@ -1,7 +1,7 @@
 
 
 
-name: branch-protection.yml
+name: branch-protection
 on:
   push:
     branches:
@@ -13,21 +13,16 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v2-beta
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Setup Maven
-        uses: actions/setup-java@v1
-        with:
-          java-version: '11.x'
       - name: Check for code changes
-        run: git diff --exit-code
+        run: |
+          git diff-tree --no-commit-id --name-only -r ${{ github.sha }}
       - name: Enforce code coverage report
-        run: mvn jacoco:report
+        run: |
+          npm run coverage-report
       - name: Verify code linting and unit tests
-        run: npm test
+        run: |
+          npm run lint
+          npm run test
       - name: Complete job
-        run: echo "Job complete."
+        run: |
+          echo "Job completed successfully."
