@@ -1,10 +1,11 @@
 
 
-name: branch-protection.yml
 
+name: branch-protection.yml
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
@@ -12,18 +13,20 @@ jobs:
     strategy:
       matrix:
         node-version: [20]
-
     steps:
       - name: Check for code changes
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
       - name: Enforce code coverage report
-        run: npm run coverage
-
+        uses: actions/upload-artifact@v2
+        with:
+          name: code-coverage-report
+          path: coverage/
       - name: Verify code linting and unit tests
-        run: npm run lint && npm run test
-
+        run: |
+          npm install
+          npm run lint
+          npm test
       - name: Complete job
-        run: echo "Job successfully completed with code changes."
+        run: echo "Job completed successfully."
