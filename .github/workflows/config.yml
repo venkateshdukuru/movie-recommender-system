@@ -1,9 +1,7 @@
 
 
 
-
-
-name: branch-protection.yml
+name: branch-protection
 on:
   push:
     branches:
@@ -15,16 +13,18 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - name: Check for code changes
-        if: github.event.commits[0].added != '' || github.event.commits[0].modified != ''
+      - name: Check code changes
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Enforce code coverage
+        if: ${{ github.event.commits[0].added != [] || github.event.commits[0].modified != [] }}
         run: |
-          # Code to check for changes and enforce rules
-      - name: Enforce code coverage report
-        run: |
-          # Code to enforce code coverage report
+          # Add code coverage enforcement here
       - name: Verify code linting and unit tests
+        if: ${{ github.event.commits[0].added != [] || github.event.commits[0].modified != [] }}
         run: |
-          # Code to verify code linting and unit tests
+          # Add code linting and unit tests verification here
       - name: Complete job
         run: |
-          # Code to complete job
+          # Add any remaining steps to complete the job here
