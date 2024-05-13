@@ -1,5 +1,6 @@
 
 
+
 name: branch-protection.yml
 
 on:
@@ -12,15 +13,24 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        node-version: [20]
+        node-version: [20.x]
     steps:
       - name: Check for code changes
-        if: ${{ github.event_name == 'push' && contains(github.event.commits.*.added, '**/*') || contains(github.event.commits.*.modified, '**/*') || contains(github.event.commits.*.removed, '**/*') }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
-          # Enforce branch rules here
-          # Take suitable enforce rules(20) based on following information to run successful jobs
-          # Set up job
-          # Check for code changes
-          # Enforce code coverage report
-          # Verify code linting and unit tests
-          # Complete job
+          git diff-tree --no-commit-id --name-only -r ${{ github.sha }} > changed_files.txt
+      - name: Enforce code coverage report
+        if: ${{ steps.check_changes.outputs.code_changes == 'true' }}
+        run: |
+          # Add code coverage enforcement logic here
+      - name: Verify code linting and unit tests
+        if: ${{ steps.check_changes.outputs.code_changes == 'true' }}
+        run: |
+          # Add code linting and unit tests verification logic here
+      - name: Complete job
+        run: |
+          # Add logic to complete the job
+      - name: Check changes output
+        id: check_changes
+        run: |
+          echo ::set-output name=code_changes::$(cat changed_files.txt | wc -l)
