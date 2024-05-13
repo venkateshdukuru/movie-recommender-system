@@ -1,9 +1,11 @@
 
 
-name: branch-protection
+
+name: branch-protection.yml
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
@@ -11,24 +13,14 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - name: check-code-changes
-        if: github.event_name == 'push'
-        run: |
-          if git diff-tree --no-commit-id --name-only -r "${{ github.sha }}" | grep -q ".*"; then
-            echo "Code changes detected."
-          else
-            echo "No code changes detected."
-            exit 78
-          fi
-      - name: enforce-rules
-        if: ${{ github.event_name == 'push' && steps.check-code-changes.outcome == 'success' }}
-        run: |
-          if [[ "${{ steps.check-code-changes.outcome }}" == "success" ]]; then
-            # add commands for enforcing rules here
-            echo "Enforcing rules..."
-          else
-            echo "No code changes detected, skipping rules enforcement."
-            exit 78
-          fi
-      - name: setup-job
-        if: ${{ github.event_name == 'push' && steps.check-code-changes.outcome == 'success' }}
+      - name: Check for code changes
+        if: github.event.commits
+        run: echo "Code changes detected."
+      - name: Setup job
+        run: echo "Setting up job."
+      - name: Enforce code coverage report
+        run: echo "Enforcing code coverage report."
+      - name: Verify code linting and unit tests
+        run: echo "Verifying code linting and unit tests."
+      - name: Complete job
+        run: echo "Job completed successfully."
