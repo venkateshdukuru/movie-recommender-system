@@ -1,10 +1,12 @@
 
 
 name: branch-protection.yml
-on:
+
+on: 
   push:
-    branches:
+    branches: 
       - main
+
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
@@ -12,13 +14,18 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - name: Check code changes
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Enforce rules
-        if: ${{ github.event.commits }}
+      - uses: actions/checkout@v2
+        if: contains(github.event.head_commit.modified, 'code changes')
+        name: check code changes
+      - name: enforce rules
         run: |
-          # Enforce code coverage report
-          # Verify code linting and unit tests
-          # Complete job
+          # insert suitable enforce rules here
+      - name: set up job
+        run: |
+          # insert code coverage report setup here
+      - name: verify code linting and unit tests
+        run: |
+          # insert code linting and unit tests here
+      - name: complete job
+        run: |
+          # insert code to complete job here
