@@ -1,12 +1,11 @@
 
 
-name: branch-protection
+name: branch-protection.yml
 
 on:
   push:
-    branches:
-      - main
-      
+    branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
@@ -14,20 +13,19 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       - name: Check for code changes
         run: |
-          git diff --name-only ${{ github.event.before }} ${{ github.event.after }}
+          if [[ -z "$GITHUB_EVENT_PATH" ]]; then exit 1; fi
+          if [[ `jq '.commits | length' $GITHUB_EVENT_PATH` -eq 0 ]]; then exit 0; fi
       - name: Enforce code coverage report
-        if: ${{ steps.check-changes.outputs.has_changes == 'true' }}
         run: |
-          # insert code coverage report command here
+          npm install -g codecov
+          codecov
       - name: Verify code linting and unit tests
-        if: ${{ steps.check-changes.outputs.has_changes == 'true' }}
         run: |
-          # insert linting and unit tests command here
+          npm install
+          npm run lint
+          npm run test
       - name: Complete job
-        if: ${{ steps.check-changes.outputs.has_changes == 'true' }}
-        run: |
-          # insert any final steps to complete job here
+        run: echo "Job completed successfully!"
