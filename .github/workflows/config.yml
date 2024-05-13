@@ -2,25 +2,27 @@
 
 
 name: branch-protection.yml
+
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
       matrix:
-        node-version: [20]
+        node-version: [20.x]
     steps:
-      - name: Check for Changes
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.added.length > 0 || github.event.head_commit.modified.length > 0 || github.event.head_commit.removed.length > 0 }}
-        run: echo "Changes detected"
-      - name: Enforce Code Coverage
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      - name: Check for code changes
+        if: github.event_name == 'push' && github.event.head_commit.added.length + github.event.head_commit.modified.length + github.event.head_commit.removed.length > 0
+        run: echo "Code changes detected"
+      - name: Enforce code coverage report
+        if: github.event_name == 'push' && github.event.head_commit.added.length + github.event.head_commit.modified.length + github.event.head_commit.removed.length > 0
         run: echo "Enforcing code coverage report"
-      - name: Verify Code Linting and Unit Tests
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      - name: Verify code linting and unit tests
+        if: github.event_name == 'push' && github.event.head_commit.added.length + github.event.head_commit.modified.length + github.event.head_commit.removed.length > 0
         run: echo "Verifying code linting and unit tests"
-      - name: Complete Job
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: echo "Job completed successfully"
+      - name: Complete job
+        if: github.event_name == 'push' && github.event.head_commit.added.length
