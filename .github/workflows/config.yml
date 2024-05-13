@@ -1,10 +1,13 @@
 
 
+
 name: branch-protection
+
 on:
   push:
     branches:
       - main
+
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
@@ -12,17 +15,30 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - name: Check for code changes
-        if: github.event_name == 'push'
-        run: echo "Checking for code changes"
-      - name: Enforce code coverage report
-        if: github.event_name == 'push'
-        uses: actions/setup-java@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          java-version: '8'
-      - name: Verify code linting and unit tests
-        if: github.event_name == 'push'
-        run: echo "Verifying code linting and unit tests"
-      - name: Complete job
-        if: github.event_name == 'push'
-        run: echo "Job complete"
+          node-version: ${{ matrix.node-version }}
+      - name: Maven Run
+        run: java
+        with:
+          args: maven
+      - name: Check for Code Changes
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "Code changes detected."
+          else
+            echo "No code changes detected."
+            exit 1
+          fi
+      - name: Enforce Code Coverage Report
+        run: |
+          # Add commands to enforce code coverage report
+      - name: Verify Code Linting and Unit Tests
+        run: |
+          # Add commands to verify code linting and unit tests
+      - name: Complete Job
+        run: |
+          echo "Job completed successfully."
