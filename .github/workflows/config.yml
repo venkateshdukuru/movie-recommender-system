@@ -1,5 +1,6 @@
 
 
+
 name: branch-protection.yml
 on:
   push:
@@ -11,11 +12,20 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - name: check-for-code-changes
+      - name: Check for code changes
         uses: actions/checkout@v2
-      - name: enforce-code-coverage-report
-        run: npm test --coverage
-      - name: verify-code-linting-and-unit-tests
-        run: npm run lint && npm test
-      - name: complete-job
-        run: npm install && npm start
+        with:
+          fetch-depth: 0
+      - name: Enforce code coverage report
+        run: |
+          if [ -z "$(git diff --name-only ${{ github.base_ref }}..${{ github.head_ref }})" ]; then
+            echo "No code changes detected, skipping code coverage enforcement."
+          else
+            mvn jacoco:report
+          fi
+      - name: Verify code linting and unit tests
+        run: |
+          mvn spotbugs:check
+          mvn test
+      - name: Complete job
+        run: echo "Job successfully completed."
