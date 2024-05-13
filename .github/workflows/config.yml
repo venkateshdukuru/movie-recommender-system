@@ -1,29 +1,34 @@
 
 
 name: branch-protection
-
 on:
   push:
-    branches:
-      - main
-
+    branches: [main]
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
       matrix:
-        node-version: [20.x]
-        java-version: [maven]
+        node-version: [20]
     steps:
-      - name: Check for code changes
-        if: ${{ github.event_name == 'push' && github.event.head_commit.modified.length > 0 }}
-        run: echo "Code changes detected!"
-      - name: Enforce code coverage report
-        if: ${{ github.event_name == 'push' && github.event.head_commit.modified.length > 0 }}
-        run: echo "Enforcing code coverage report..."
-      - name: Verify code linting and unit tests
-        if: ${{ github.event_name == 'push' && github.event.head_commit.modified.length > 0 }}
-        run: echo "Verifying code linting and unit tests..."
-      - name: Complete job
-        if: ${{ github.event_name == 'push' && github.event.head_commit.modified.length > 0 }}
-        run: echo "Job completed successfully!"
+      - name: check-code-changes
+        if: github.event_name == 'push'
+        run: |
+          if git diff-tree --no-commit-id --name-only -r "${{ github.sha }}" | grep -q ".*"; then
+            echo "Code changes detected."
+          else
+            echo "No code changes detected."
+            exit 78
+          fi
+      - name: enforce-rules
+        if: ${{ github.event_name == 'push' && steps.check-code-changes.outcome == 'success' }}
+        run: |
+          if [[ "${{ steps.check-code-changes.outcome }}" == "success" ]]; then
+            # add commands for enforcing rules here
+            echo "Enforcing rules..."
+          else
+            echo "No code changes detected, skipping rules enforcement."
+            exit 78
+          fi
+      - name: setup-job
+        if: ${{ github.event_name == 'push' && steps.check-code-changes.outcome == 'success' }}
