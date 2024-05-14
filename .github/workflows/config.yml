@@ -3,28 +3,24 @@
 name: branch-protection.yml
 on:
   push:
-    branches: [main]
-    
+    branches: 
+      - main
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
       matrix:
         node-version: [20]
-    
     steps:
       - name: Check for code changes
-        run: git diff --name-only ${{ github.sha }} ${{ github.sha }}^
-        id: changed_files
-        
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: git diff --name-only ${{ github.event.before }}...${{ github.sha }}
       - name: Enforce code coverage report
-        if: ${{ steps.changed_files.outputs.contains('*.js') }}
+        if: ${{ steps.check_changes.outputs.has_changes == 'true' }}
         run: npm run coverage
-        
       - name: Verify code linting and unit tests
-        if: ${{ steps.changed_files.outputs.contains('*.js') }}
-        run: npm run lint && npm run test
-        
+        if: ${{ steps.check_changes.outputs.has_changes == 'true' }}
+        run: npm run lint && npm test
       - name: Complete job
-        if: ${{ steps.changed_files.outputs.contains('*.js') }}
-        run: echo "Job completed successfully."
+        if: ${{ steps.check_changes.outputs.has_changes == 'true' }}
+        run: echo "Branch rules successfully enforced."
