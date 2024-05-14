@@ -1,37 +1,25 @@
 
+
 name: branch-protection.yml
+
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [20]
     steps:
-      - uses: actions/checkout@v2
-      - name: check for code changes
-        run: |
-          if [ -z "$(git diff --name-only ${{ github.base_ref }} ${{ github.head_ref }})" ]; then
-            echo "No code changes detected."
-          else
-            echo "There are code changes."
-          fi
-      - name: enforce code coverage report
-        run: |
-          if [ -f "coverage_report.txt" ]; then
-            echo "Code coverage report generated."
-          else
-            echo "Code coverage report not found."
-          fi
-      - name: verify code linting and unit tests
-        run: |
-          if [ -f "lint_report.txt" ] && [ -f "unit_test_report.txt" ]; then
-            echo "Code linting and unit tests passed."
-          else
-            echo "Code linting or unit tests failed."
-          fi
-      - name: complete job
+      - name: Check for code changes
+        uses: actions/checkout@v2
+      - name: Enforce Code Coverage Report
+        run: npm run coverage
+      - name: Verify Code Linting and Unit Tests
+        run: npm run lint && npm run test
+      - name: Complete job
         if: success()
-       
+        run: echo "All requirements have been successfully met."
