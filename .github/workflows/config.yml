@@ -1,22 +1,33 @@
 
 
-YAML:
-name: CI/CD Pipeline
 
+Name: branch-protection.yml
 on:
   push:
-    branches: [main]
-
+    branches:
+      - main
 jobs:
-  build:
-    name: Setup Job
-    runs-on: ubuntu-latest
+  enforce-branch-rules:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node-version: [20]
     steps:
-      - name: Check for Code Changes
-        uses: actions/checkout@v2
-      - name: Enforce Code Coverage Report
-        run: npm run coverage
-      - name: Verify Code Linting and Unit Tests
+      - name: Check for code changes
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const files = await github.event.inputs.files;
+            const changes = await github.event.inputs.changes;
+            if (files.length > 0 || changes > 0) {
+              // Continue with job
+            } else {
+              // Exit job
+              return
+            }
+      - name: Enforce code coverage report
+        run: npm run code-coverage
+      - name: Verify code linting and unit tests
         run: npm run lint && npm run test
-      - name: Complete Job
-        run: npm run build && npm run deploy
+      - name: Complete job
+        run: echo "Job completed successfully!"
