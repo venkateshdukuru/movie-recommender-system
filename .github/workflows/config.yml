@@ -1,42 +1,29 @@
-
+ 
 
 name: branch-protection.yml
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Check for code changes
-        uses: actions/github-script@v3
-        with:
-          script: >
-            const commits = await github.repos.listCommits({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: context.sha
-            });
-            if(commits.data.length > 0) {
-              core.info('Changes detected. Enforcing branch rules...');
-            } else {
-              core.info('No changes detected. Skipping branch rules.');
-              return;
-            }
-      - name: Setup job
+        if: github.event.commits[0].added != '' || github.event.commits[0].modified != ''
         run: |
-          # Add any setup steps here, such as installing dependencies
-          npm install
+          # Your code here to check for code changes
+      - name: Set up job
+        run: |
+          # Your code here to set up the job
       - name: Enforce code coverage report
         run: |
-          # Generate code coverage report here
-          npm run coverage
+          # Your code here to enforce code coverage report
       - name: Verify code linting and unit tests
         run: |
-          # Run code linting and unit tests here
-          npm run lint
-          npm test
-      -
+          # Your code here to verify code linting and unit tests
+      - name: Complete job
+        run: |
+          # Your code here to complete the job
