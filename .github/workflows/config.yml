@@ -4,7 +4,8 @@ name: branch-protection.yml
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
@@ -13,14 +14,9 @@ jobs:
     steps:
       - name: Check for code changes
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
       - name: Enforce code coverage report
         run: |
-          # insert code coverage report command here
+          # Code coverage report enforcement code here
       - name: Verify code linting and unit tests
         run: |
-          # insert code linting and unit tests command here
-      - name: Complete job
-        run: |
-          # insert any additional commands or steps to complete the job here
+          # Code linting and unit tests verification code here
