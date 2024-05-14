@@ -1,38 +1,30 @@
 
 
-
 name: branch-protection.yml
 on:
   push:
     branches: [main]
-
+    
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
-    name: enforce-branch-rules
     strategy:
       matrix:
         node-version: [20]
+    
     steps:
-      - name: check-code-changes
-        uses: actions/github-script@v3
-        with:
-          script: |
-            if(github.event.commits[0].added.length > 0 || github.event.commits[0].modified.length > 0 || github.event.commits[0].removed.length > 0) {
-              echo "Code changes detected."
-            } else {
-              echo "No code changes detected."
-              exit 1
-            }
-
-      - name: enforce-code-coverage
-        run: take suitable enforce rules(20) based on following information
-
-      - name: verify-code-linting
-        run: take the latest information to do below jobs
-
-      - name: run-unit-tests
-        run: take the latest information to do below jobs
-
-      - name: complete-job
-        run: take your own requirements and generate to run jobs sucessfully
+      - name: Check for code changes
+        run: git diff --name-only ${{ github.sha }} ${{ github.sha }}^
+        id: changed_files
+        
+      - name: Enforce code coverage report
+        if: ${{ steps.changed_files.outputs.contains('*.js') }}
+        run: npm run coverage
+        
+      - name: Verify code linting and unit tests
+        if: ${{ steps.changed_files.outputs.contains('*.js') }}
+        run: npm run lint && npm run test
+        
+      - name: Complete job
+        if: ${{ steps.changed_files.outputs.contains('*.js') }}
+        run: echo "Job completed successfully."
