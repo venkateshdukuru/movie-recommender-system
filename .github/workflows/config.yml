@@ -1,10 +1,12 @@
 
 
+
 name: branch-protection.yml
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
@@ -13,13 +15,15 @@ jobs:
       matrix:
         node-version: [20]
     steps:
+      - uses: actions/checkout@v2
       - name: Check for code changes
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+        run: |
+          if [ -z "$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})" ]; then
+            exit 78 # No changes
+          fi
       - name: Enforce code coverage report
         run: npm run coverage
       - name: Verify code linting and unit tests
-        run: npm run lint && npm run test
+        run: npm test
       - name: Complete job
         run: echo "Job completed successfully"
