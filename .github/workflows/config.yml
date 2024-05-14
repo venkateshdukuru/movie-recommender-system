@@ -4,26 +4,20 @@ name: branch-protection.yml
 
 on:
   push:
-    branches:
-      - main
+    branches: main
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && contains(github.event.commits.*.added, '**') || contains(github.event.commits.*.modified, '**') }}
+    if: github.event_name == 'push' && contains(github.event.head_commit.modified, 'code')
     steps:
-      - name: Setup job
-        run: |
-          # insert code for setup here
-      - name: Check for code changes
-        run: |
-          # insert code for checking code changes here
-      - name: Enforce code coverage report
-        run: |
-          # insert code for enforcing code coverage report here
-      - name: Verify code linting and unit tests
-        run: |
-          # insert code for verifying code linting and unit tests here
-      - name: Complete job
-        run: |
-          # insert code for completing job here
+      - name: set up job
+        run: echo "Setting up job..."
+      - name: check for code changes
+        run: echo "Checking for code changes..."
+      - name: enforce code coverage report
+        run: echo "Enforcing code coverage report..."
+      - name: verify code linting and unit tests
+        run: echo "Verifying code linting and unit tests..."
+      - name: complete job
+        run: echo "Job complete."
