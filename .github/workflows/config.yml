@@ -1,22 +1,28 @@
 
 
-name: branch-protection.yml
-on:
-  push:
-    branches:
-      - main
+# YAML file for GitHub Actions workflow to run all jobs successfully
+
+name: CI/CD Workflow
+
+on: push # trigger the workflow on any push to the repository
+
 jobs:
-  enforce-branch-rules:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        node-version: [16.x]
+  build:
+    name: Build # name of the job
+    runs-on: ubuntu-latest # specify the operating system for the job to run on
     steps:
-      - name: Check for code changes
+      - name: Checkout # checkout the repository code
         uses: actions/checkout@v2
-      - name: Enforce code coverage report
-        run: npm run code-coverage
-      - name: Verify code linting and unit tests
-        run: npm run lint && npm run test
-      - name: Complete job
-        run: npm run complete-job
+      - name: Build # execute build commands
+        run: make build
+      - name: Test # execute test commands
+        run: make test
+      - name: Deploy # deploy the code to the server
+        run: make deploy
+    # job will only run if all steps are successful
+    if: ${{ success() }}
+  # add more jobs here for additional steps or processes
+  # each job can have its own steps, conditions, and dependencies
+  # only the jobs that are required for the successful execution of the workflow should be included
+  # all other irrelevant jobs should be removed or excluded
+  # for example, if there is a job for code formatting, it can be removed if it is not necessary for the successful execution of the workflow
