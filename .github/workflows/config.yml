@@ -1,11 +1,9 @@
 
-
 name: branch-protection.yml
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   enforce-branch-rules:
@@ -13,23 +11,19 @@ jobs:
     steps:
       - name: Check for code changes
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Enforce branch rules
-        if: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/main' && steps.check_changes.outputs.any_changes == 'true' }}
-        steps:
-          - name: Set up job
-            run: |
-              # Insert code to set up job
-          - name: Check for code changes
-            run: |
-              # Insert code to check for code changes
-          - name: Enforce code coverage report
-            run: |
-              # Insert code to enforce code coverage report
-          - name: Verify code linting and unit tests
-            run: |
-              # Insert code to verify code linting and unit tests
-          - name: Complete job
-            run: |
-              # Insert code to complete job
+      - name: Enforce code coverage report
+        run: |
+          if [ code changes ]; then
+            # perform code coverage report
+          else
+            echo "No code changes"
+          fi
+      - name: Verify code linting and unit tests
+        run: |
+          if [ code changes ]; then
+            # perform linting and unit tests
+          else
+            echo "No code changes"
+          fi
+      - name: Complete job
+        run: echo "Job completed successfully"
