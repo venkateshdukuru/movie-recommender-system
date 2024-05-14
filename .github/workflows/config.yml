@@ -1,28 +1,22 @@
 
 
-# YAML file for GitHub Actions workflow to run all jobs successfully
+YAML:
+name: CI/CD Pipeline
 
-name: CI/CD Workflow
-
-on: push # trigger the workflow on any push to the repository
+on:
+  push:
+    branches: [main]
 
 jobs:
   build:
-    name: Build # name of the job
-    runs-on: ubuntu-latest # specify the operating system for the job to run on
+    name: Setup Job
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout # checkout the repository code
+      - name: Check for Code Changes
         uses: actions/checkout@v2
-      - name: Build # execute build commands
-        run: make build
-      - name: Test # execute test commands
-        run: make test
-      - name: Deploy # deploy the code to the server
-        run: make deploy
-    # job will only run if all steps are successful
-    if: ${{ success() }}
-  # add more jobs here for additional steps or processes
-  # each job can have its own steps, conditions, and dependencies
-  # only the jobs that are required for the successful execution of the workflow should be included
-  # all other irrelevant jobs should be removed or excluded
-  # for example, if there is a job for code formatting, it can be removed if it is not necessary for the successful execution of the workflow
+      - name: Enforce Code Coverage Report
+        run: npm run coverage
+      - name: Verify Code Linting and Unit Tests
+        run: npm run lint && npm run test
+      - name: Complete Job
+        run: npm run build && npm run deploy
