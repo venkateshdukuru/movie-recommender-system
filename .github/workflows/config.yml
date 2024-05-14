@@ -11,13 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check for code changes
-        if: github.event_name == 'push' && github.event.head_commit.added.length + github.event.head_commit.removed.length + github.event.head_commit.modified.length > 0
-        run: echo "Changes detected."
+        if: github.event_name == 'push' && github.event.head_commit.added != null || github.event.head_commit.modified != null
+        run: echo "Code changes detected"
       - name: Set up job
-        run: echo "Setting up job."
+        run: echo "Setting up job"
       - name: Enforce code coverage report
-        run: echo "Enforcing code coverage report."
+        run: echo "Enforcing code coverage report"
       - name: Verify code linting and unit tests
-        run: echo "Verifying code linting and unit tests."
+        run: echo "Verifying code linting and unit tests"
       - name: Complete job
-        run: echo "Job completed successfully."
+        run: echo "Job completed successfully"
