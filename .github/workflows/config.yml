@@ -1,24 +1,20 @@
 
 
-
 name: branch-protection.yml
 
 on:
   push:
-    branches:
-      - main
-      
+    branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
     steps:
-      - name: Check for code changes
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref }}
-      - name: Enforce code coverage report
-        run: |
-          # Add code coverage command here
-      - name: Verify code linting and unit tests
-        run: |
-          # Add code linting and unit tests command here
+    - name: Check for code changes
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.before }}
+    - name: Enforce code coverage report
+      run: ./code_coverage_report.sh
+    - name: Verify code linting and unit tests
+      run: ./linting_unit_tests.sh
