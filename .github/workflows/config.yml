@@ -4,7 +4,8 @@ name: branch-protection.yml
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
@@ -13,12 +14,11 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - uses: actions/checkout@v2
       - name: Check for code changes
-        run: git diff --name-only ${{ github.base_ref }} ${{ github.head_ref }}
+        run: git diff --quiet || echo "Code changes detected"
       - name: Enforce code coverage report
         run: npm run coverage
       - name: Verify code linting and unit tests
-        run: npm run lint && npm run test
+        run: npm run lint && npm test
       - name: Complete job
         run: echo "Job completed successfully"
