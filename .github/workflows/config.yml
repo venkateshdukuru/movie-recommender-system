@@ -1,24 +1,27 @@
 
 
 name: branch-protection.yml
+
 on:
   push:
     branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
       matrix:
-        node_version: [20]
+        node-version: [10.x, 12.x, 14.x, 15.x]
     steps:
       - name: Check for code changes
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
       - name: Enforce code coverage report
-        run: npm run coverage
+        uses: codecov/codecov-action@v1.0.11
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
       - name: Verify code linting and unit tests
         run: npm run lint && npm run test
       - name: Complete job
-        if: always()
         run: echo "Job completed successfully."
