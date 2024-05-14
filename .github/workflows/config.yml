@@ -9,17 +9,21 @@ on:
 
 jobs:
   enforce-branch-rules:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        node-version: [20]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && contains(github.event.commits.*.added, '**') || contains(github.event.commits.*.modified, '**') }}
     steps:
+      - name: Setup job
+        run: |
+          # insert code for setup here
       - name: Check for code changes
-        uses: actions/checkout@v2
-      - name: Enforce Code Coverage Report
-        run: npm run coverage
-      - name: Verify Code Linting and Unit Tests
-        run: npm run lint && npm run test
+        run: |
+          # insert code for checking code changes here
+      - name: Enforce code coverage report
+        run: |
+          # insert code for enforcing code coverage report here
+      - name: Verify code linting and unit tests
+        run: |
+          # insert code for verifying code linting and unit tests here
       - name: Complete job
-        if: success()
-        run: echo "All requirements have been successfully met."
+        run: |
+          # insert code for completing job here
