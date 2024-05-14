@@ -10,22 +10,15 @@ on:
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-
+    if: github.event_name == 'push' && contains(github.event.head_commit.modified, 'code changes')
     steps:
-      - name: Check for code changes
+      - name: setup job
         uses: actions/checkout@v2
-
-      - name: Enforce code coverage report
-        if: ${{ github.event_name == 'push' && github.event.head_commit.modified }}
-        run: |
-          # insert code coverage command here
-
-      - name: Verify code linting and unit tests
-        if: ${{ github.event_name == 'push' && github.event.head_commit.modified }}
-        run: |
-          # insert linting and unit test commands here
-
-      - name: Complete job
-        if: ${{ github.event_name == 'push' && github.event.head_commit.modified }}
-        run: |
-          # insert any additional commands here to complete the job.
+      - name: check for code changes
+        run: git diff --quiet || exit 1
+      - name: enforce code coverage report
+        run: npm run test:coverage
+      - name: verify code linting and unit tests
+        run: npm run lint && npm run test:unit
+      - name: complete job
+        run: echo "Job completed successfully."
