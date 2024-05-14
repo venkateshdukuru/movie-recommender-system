@@ -1,30 +1,30 @@
 
-# Name: branch-protection.yml
 
-# This workflow runs on push events to the main branch.
+# branch-protection.yml
+
+name: branch-protection
+
 on:
   push:
     branches:
       - main
 
-# Define a single job named enforce-branch-rules.
 jobs:
   enforce-branch-rules:
-    # Run on windows-latest.
     runs-on: windows-latest
-    # Run on Node.js 20.
     strategy:
       matrix:
         node-version: [20]
-    # Check if the pushed commit includes code changes.
+
     steps:
       - name: Check for code changes
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Enforce Code Coverage Report
+
+      - name: Enforce code coverage report
         run: npm run coverage
-      - name: Verify Code Linting and Unit Tests
+
+      - name: Verify code linting and unit tests
         run: npm run lint && npm run test
-      - name: Complete Job
-        run: echo "Job Completed Successfully"
+
+      - name: Complete job
+        run: echo "Job completed successfully"
