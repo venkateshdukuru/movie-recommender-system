@@ -1,26 +1,26 @@
 
 
 name: branch-protection.yml
+
 on:
   push:
     branches:
       - main
+
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
-      max-parallel: 1
       matrix:
-        node-version: [12.x]
-    name: enforce-branch-rules
+        node-version: [16.x]
     steps:
-      - name: check for code changes
+      - name: Check for code changes
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: enforce code coverage report
+      - name: Set up job
+        run: npm install
+      - name: Enforce code coverage report
         run: npm run coverage
-      - name: verify code linting and unit tests
-        run: npm run lint && npm run test
-      - name: complete job
-        run: echo "Job complete"
+      - name: Verify code linting and unit tests
+        run: npm run lint && npm test
+      - name: Complete job
+        run: npm run build && npm run deploy
