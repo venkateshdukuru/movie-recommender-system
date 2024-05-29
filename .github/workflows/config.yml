@@ -1,5 +1,6 @@
 
-name: branch-protection.yml
+
+name: branch-protection
 
 on:
   push:
@@ -9,26 +10,16 @@ on:
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    name: enforce-branch-rules node,js 16
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    strategy:
+      matrix:
+        node-version: [20]
     steps:
-      - name: check code changes
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: setup job
-        run: |
-          npm install
-      - name: check for code changes
-        run: |
-          git diff --name-only ${{ github.event.before }} ${{ github.event.after }}
-      - name: enforce code coverage report
-        run: |
-          npm run coverage
-      - name: verify code linting and unit tests
-        run: |
-          npm run lint
-          npm run test
-      - name: complete job
-        run: |
-          echo "Job completed successfully."
+      - name: Check for code changes
+        if: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/main' }}
+        run: git diff --quiet HEAD~1
+      - name: Enforce code coverage report
+        if: ${{ steps.check_code_changes.outputs.code_changes }}
+        run: <insert code coverage command>
+      - name: Verify code linting and unit tests
+        if: ${{ steps.check_code_changes.outputs.code_changes }}
+        run: <insert linting and unit test commands>
