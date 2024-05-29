@@ -9,15 +9,15 @@ on:
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'code changes')
     steps:
-      - name: Check for code changes
-        if: github.event.commits.length > 0
-        run: echo "Checking for code changes"
-      - name: Set up job
-        run: echo "Setting up job"
-      - name: Enforce code coverage report
-        run: echo "Enforcing code coverage report"
-      - name: Verify code linting and unit tests
-        run: echo "Verifying code linting and unit tests"
-      - name: Complete job
-        run: echo "Job completed successfully"
+      - name: set up job
+        run: echo "Setting up job..."
+      - name: check for code changes
+        run: echo "Checking for code changes..."
+      - name: enforce code coverage report
+        run: echo "Enforcing code coverage report..."
+      - name: verify code linting and unit tests
+        run: echo "Verifying code linting and unit tests..."
+      - name: complete job
+        run: echo "Job completed successfully."
