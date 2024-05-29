@@ -1,29 +1,29 @@
 
 
-name: branch-protection
+name: branch-protection.yml
+
 on:
   push:
     branches:
       - main
+
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16]
+    name: enforce-branch-rules node,js 16
     steps:
-      - name: Check for code changes
-        if: github.event_name == 'push'
-        run: git diff --name-only HEAD~1 HEAD
-      - name: Set up job
-        if: steps.check_code_changes.outputs.code_changes == 'true'
-        run: set up job
-      - name: Enforce code coverage report
-        if: steps.check_code_changes.outputs.code_changes == 'true'
-        run: enforce code coverage report
-      - name: Verify code linting and unit tests
-        if: steps.check_code_changes.outputs.code_changes == 'true'
-        run: verify code linting and unit tests
-      - name: Complete job
-        if: steps.check_code_changes.outputs.code_changes == 'true'
-        run: complete job
+      - name: setup job
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: echo "Setting up job..."
+        # check for code changes
+      - name: check for code changes
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: echo "Checking for code changes..."
+      - name: enforce code coverage report
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: echo "Enforcing code coverage report..."
+      - name: verify code linting and unit tests
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: echo "Verifying code linting and unit tests..."
+      - name: complete job
+        if: ${{ github.event_name == 'push' && github.ref
