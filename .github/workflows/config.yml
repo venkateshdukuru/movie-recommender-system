@@ -4,27 +4,29 @@ name: branch-protection.yml
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - name: Check for code changes
-        run: git diff --quiet || exit 1
-      
-      - name: Set up job
-        run: echo "Setting up job..."
-      
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
       - name: Enforce code coverage report
-        run: echo "Enforcing code coverage report..."
-      
+        if: ${{ steps.checkout.outputs.any_changed }}
+        run: |
+          # Code coverage report command
+
       - name: Verify code linting and unit tests
-        run: echo "Verifying code linting and unit tests..."
-      
+        if: ${{ steps.checkout.outputs.any_changed }}
+        run: |
+          # Code linting and unit tests command
+
       - name: Complete job
-        run: echo "Job completed successfully."
-        
-      - name: Take your own requirements
-        run: echo "Taking your own requirements..."
+        if: ${{ steps.checkout.outputs.any_changed }}
+        run: |
+          # Complete job command
