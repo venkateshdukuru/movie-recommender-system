@@ -1,23 +1,27 @@
 
 
-name: branch-protection
+name: branch-protection.yml
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - name: Check for code changes
-        if: ${{ github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0 }}
-        run: |
-          # Set up job
-          # Check for code changes
-          # Enforce code coverage report
-          # Verify code linting and unit tests
-          # Complete job
-        else:
-          run: echo "No code changes, skipping job"
+        run: git diff --name-only ${{ github.event.before }} ${{ github.event.after }}
+        id: code_changes
+      - name: Enforce code coverage report
+        if: steps.code_changes.outputs.code_changes != ''
+        run: code_coverage_report.sh
+      - name: Verify code linting and unit tests
+        if: steps.code_changes.outputs.code_changes != ''
+        run: code_linting_and_unit_tests.sh
+      - name: Complete job
+        if: steps.code_changes.outputs.code_changes != ''
+        run: complete_job.sh
+  # Add any additional jobs here that you want to run after the enforce-branch-rules job
+  # Make sure to include the necessary if conditions to check for code changes before running the job.
