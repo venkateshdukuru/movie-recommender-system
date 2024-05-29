@@ -1,28 +1,44 @@
 
-name: branch-protection.yml
 
-on: 
+
+
+
+name: deploy-multi-env.yml
+
+on:
   push:
-    branches: 
-      - main
+    branches: [ main ]
 
 jobs:
-  enforce-branch-rules:
+  deploy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20]
+    container:
+      image: python:3.9
     steps:
-      - name: check code changes
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.commits[0].added, '**/*.js') || contains(github.event.commits[0].modified, '**/*.js') }}
-        run: echo "Code changes detected."
-      - name: set up job
-        run: echo "Setting up job."
-      - name: check for code changes
-        run: echo "Checking for code changes."
-      - name: enforce code coverage report
-        run: echo "Enforcing code coverage report."
-      - name: verify code linting and unit tests
-        run: echo "Verifying code linting and unit tests."
-      - name: complete job
-        run: echo "Job completed successfully."
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: main
+      - name: Install dependencies
+        run: |
+          pip install boto3
+      - name: deploy_staging
+        if: github.ref == 'refs/heads/staging'
+        needs: deploy
+        steps:
+          - name: Use AWS credentials
+            run: |
+              export AWS_ACCESS_KEY_ID=${{ secrets.AWS_STAGING_KEY }}
+              export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_STAGING_SECRET }}
+          - name: Configure environment variables
+            run: |
+              boto3.setup_default_session(region_name='staging')
+              # add code to configure environment variables for staging deployment
+      - name: deploy_production
+        if: github.ref == 'refs/heads/master'
+        needs: deploy
+        steps:
+          - name: Use AWS credentials
+            run: |
+              export AWS_ACCESS_KEY_ID=${{ secrets.AWS_PRODUCTION_KEY }}
+              export AWS_SECRET_ACCESS_KEY=${{
