@@ -1,29 +1,32 @@
 
 
 name: branch-protection.yml
-
 on:
   push:
     branches:
       - main
-
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    name: enforce-branch-rules node,js 16
+    name: enforce-branch-rules
+    strategy:
+      matrix:
+        node-version: [16.x]
     steps:
-      - name: setup job
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: echo "Setting up job..."
-        # check for code changes
+      - name: checkout code
+        uses: actions/checkout@v2
       - name: check for code changes
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: echo "Checking for code changes..."
+        run: git diff-tree --no-commit-id --name-only -r ${{ github.sha }}
       - name: enforce code coverage report
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: echo "Enforcing code coverage report..."
+        if: ${{ steps.check-code-changes.outputs.code-changed == 'true' }}
+        run: npm run coverage
       - name: verify code linting and unit tests
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: echo "Verifying code linting and unit tests..."
+        if: ${{ steps.check-code-changes.outputs.code-changed == 'true' }}
+        run: npm run lint && npm run test
       - name: complete job
-        if: ${{ github.event_name == 'push' && github.ref
+        if: ${{ steps.check-code-changes.outputs.code-changed == 'true' }}
+        run: echo "Job completed successfully."
+      - name: set up job
+        run: setup-job
+      - name: check for code changes
+        run: git diff-tree --no-commit-id --name
