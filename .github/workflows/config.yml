@@ -1,43 +1,29 @@
 
 
-# Name of the YAML file
-name: branch-protection.yml
+name: branch-protection
 
-# Workflow triggered by push events to the main branch
 on:
   push:
     branches:
       - main
 
-# Single job named enforce-branch-rules
 jobs:
   enforce-branch-rules:
-    # Job runs on ubuntu-latest
     runs-on: ubuntu-latest
-
-    # Check if the pushed commit includes code changes
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    # Steps to be executed if there are code changes
+    if: ${{ github.event_name == 'push' && contains(github.event.head_commit.modified, 'code') }}
     steps:
-      # Set up job
-      - name: Set up job
+      - name: setup job
         run: |
-          echo "Setting up job..."
-
-      # Check for code changes
-      - name: Check for code changes
+          # insert code for setting up job here
+      - name: check for code changes
         run: |
-          git diff --name-only ${{ github.event.before }} ${{ github.event.after }}
-
-      # Enforce code coverage report
-      - name: Enforce code coverage report
+          # insert code for checking code changes here
+      - name: enforce code coverage report
         run: |
-          echo "Enforcing code coverage report..."
-
-      # Verify code linting and unit tests
-      - name: Verify code linting and unit tests
+          # insert code for enforcing code coverage report here
+      - name: verify code linting and unit tests
         run: |
-          echo "Verifying code linting and unit tests..."
-
-      # Complete job
+          # insert code for verifying code linting and unit tests here
+      - name: complete job
+        run: |
+          # insert code for completing job here
