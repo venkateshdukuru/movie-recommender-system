@@ -1,29 +1,24 @@
 
 
-# branch-protection.yml
-
-name: Branch Protection Workflow
-
+name: branch-protection.yml
 on:
   push:
-    branches:
-      - main
-
+    branches: [main]
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - name: Check for code changes
-        id: check-changes
-        run: git diff --quiet HEAD^ HEAD
-      - name: Enforce Requirements
-        if: steps.check-changes.outputs.return-code == 0
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Enforce code coverage report
         run: |
-          # Set up job
-          # Check for code changes
-          # Enforce code coverage report
-          # Verify code linting and unit tests
-          # Complete job
-      - name: Take your own requirements
+          # insert code coverage report command here
+      - name: Verify code linting and unit tests
         run: |
-          # Insert your own requirements here to run all jobs successfully
+          # insert code linting and unit tests command here
+      - name: Complete job
+        run: |
+          # insert completion command here
