@@ -1,20 +1,23 @@
 
 
-name: branch-protection.yml
+name: branch-protection
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
     steps:
       - name: Check for code changes
-        uses: actions/checkout@v2
-      - name: Enforce code coverage report
-        run: <insert code coverage command>
-      - name: Verify code linting and unit tests
-        run: <insert linting and unit test command>
-      - name: Complete job
-        run: <insert completion command>
+        if: ${{ github.event.commits[0].added.length + github.event.commits[0].modified.length + github.event.commits[0].removed.length > 0 }}
+        run: |
+          # Set up job
+          # Check for code changes
+          # Enforce code coverage report
+          # Verify code linting and unit tests
+          # Complete job
+        else:
+          run: echo "No code changes, skipping job"
