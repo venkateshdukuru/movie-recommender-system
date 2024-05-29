@@ -4,29 +4,29 @@ name: branch-protection.yml
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - name: Check for code changes
-        uses: actions/checkout@v2
+        id: check-changes
+        uses: actions/github-script@v3
         with:
-          fetch-depth: 0
+          script: |
+            const commits = github.event.commits
+            const files = commits[commits.length - 1].added.concat(commits[commits.length - 1].modified)
+            core.setOutput('changes', files.length)
 
       - name: Enforce code coverage report
-        if: ${{ steps.checkout.outputs.any_changed }}
-        run: |
-          # Code coverage report command
+        if: steps.check-changes.outputs.changes > 0
+        run: <insert code coverage command here>
 
       - name: Verify code linting and unit tests
-        if: ${{ steps.checkout.outputs.any_changed }}
-        run: |
-          # Code linting and unit tests command
+        if: steps.check-changes.outputs.changes > 0
+        run: <insert linting and unit test commands here>
 
       - name: Complete job
-        if: ${{ steps.checkout.outputs.any_changed }}
-        run: |
-          # Complete job command
+        run: <insert completion command here>
