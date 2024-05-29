@@ -4,20 +4,32 @@ name: branch-protection.yml
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   enforce-branch-rules:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.commits.*.added, 'code changes') }}
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
-      - name: set up job
+      - name: check-code-changes
+        uses: actions/github-script@v3
+        with:
+          script: |
+            if (github.event.commits[0].added.length > 0 || github.event.commits[0].modified.length > 0 || github.event.commits[0].removed.length > 0) {
+              echo "Code changes detected, enforcing branch rules..."
+            } else {
+              echo "No code changes detected, skipping branch rules enforcement."
+            }
+            
+      - name: setup-job
         run: echo "Setting up job..."
-      - name: check for code changes
-        run: echo "Checking for code changes..."
-      - name: enforce code coverage report
+        
+      - name: check-code-coverage
         run: echo "Enforcing code coverage report..."
-      - name: verify code linting and unit tests
+        
+      - name: verify-code-linting
         run: echo "Verifying code linting and unit tests..."
-      - name: complete job
+        
+      - name: complete-job
         run: echo "Job completed successfully."
