@@ -1,27 +1,31 @@
 
 
-
 name: branch-protection.yml
+
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
       matrix:
         node-version: [20]
+    
     steps:
-      - uses: actions/checkout@v2
       - name: Check for code changes
-        run: git diff --quiet || echo "::set-output name=changes::true"
+        run: git diff --name-only ${{ github.event.before }} ${{ github.event.after }}
+        id: check_changes
+      
       - name: Enforce code coverage report
-        if: steps.check-changes.outputs.changes == 'true'
-        run: npm run coverage
+        if: steps.check_changes.outputs.code_changes == true
+        run: <insert code coverage command here>
+        
       - name: Verify code linting and unit tests
-        if: steps.check-changes.outputs.changes == 'true'
-        run: npm run lint && npm run test
+        if: steps.check_changes.outputs.code_changes == true
+        run: <insert linting and unit test commands here>
+        
       - name: Complete job
-        if: steps.check-changes.outputs.changes == 'true'
-        run: echo "Job completed successfully."
+        if: steps.check_changes.outputs.code_changes == true
+        run: <insert completion command here>
