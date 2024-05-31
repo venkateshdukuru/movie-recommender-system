@@ -1,35 +1,30 @@
 
 
 name: branch-protection.yml
+
 on:
   push:
     branches:
       - main
+      
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
     strategy:
       matrix:
         node-version: [20]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Check for code changes
-        run: git diff --name-only ${{ github.sha }} ${{ github.base_ref }}
+        run: git diff --name-only ${{ github.event.before }} ${{ github.event.after }}
+        id: check-changes
       - name: Enforce code coverage report
-        shell: bash
-        run: |
-          if [[ -z "${{ steps.check-changes.outputs.files }}" ]]; then
-            echo "No code changes, skipping code coverage report enforcement"
-          else
-            # insert code coverage report enforcement here
-          fi
+        if: steps.check-changes.outputs.codechanges == 'true'
+        run: npm run coverage
+        id: code-coverage
       - name: Verify code linting and unit tests
-        shell: bash
-        run: |
-          if [[ -z "${{ steps.check-changes.outputs.files }}" ]]; then
-            echo "No code changes, skipping code linting and unit tests verification"
-          else
-            # insert code linting and unit tests verification here
-          fi
+        if: steps.check-changes.outputs.codechanges == 'true'
+        run: npm run lint && npm run test
+        id: code-linting-tests
       - name: Complete job
-        run: echo "Job completed successfully"
+        if: steps.check-changes.outputs.codechanges == 'true'
+        run: echo "Job completed successfully."
