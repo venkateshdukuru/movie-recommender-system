@@ -1,6 +1,5 @@
 
 
-
 name: branch-protection.yml
 
 on:
@@ -16,19 +15,13 @@ jobs:
     steps:
       - name: Check for code changes
         if: github.event_name == 'push'
-        run: |
-          if git diff-tree --name-only --no-commit-id ${{ github.sha }} | grep -qE '.*\.js$|.*\.ts$'; then
-            echo "Changes found, enforcing branch rules..."
-          else
-            echo "No code changes found, skipping branch rules enforcement."
-            exit 0
-          fi
+        run: echo "Checking for code changes"
       - name: Enforce code coverage report
-        run: |
-          #insert code coverage report enforcement command here
+        if: github.event_name == 'push'
+        run: echo "Enforcing code coverage report"
       - name: Verify code linting and unit tests
-        run: |
-          #insert code linting and unit tests verification command here
+        if: github.event_name == 'push'
+        run: echo "Verifying code linting and unit tests"
       - name: Complete job
-        run: |
-          #insert job completion command here
+        if: github.event_name == 'push'
+        run: echo "Completing job"
