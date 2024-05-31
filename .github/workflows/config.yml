@@ -1,11 +1,12 @@
 
 
-
 name: branch-protection.yml
+
 on:
   push:
     branches:
       - main
+
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
@@ -14,13 +15,15 @@ jobs:
         node-version: [20]
     steps:
       - name: Check for code changes
-        if: github.event_name == 'push' && github.event.pull_request.commits
-        run: echo "Code changes detected."
+        run: git diff --name-only ${{ github.event.before }} ${{ github.sha }}
       - name: Enforce code coverage report
-        if: github.event_name == 'push' && github.event.pull_request.commits
-        run: echo "Enforcing code coverage report."
+        if: always()
+        run: |
+          # Insert code for enforcing code coverage report here
       - name: Verify code linting and unit tests
-        if: github.event_name == 'push' && github.event.pull_request.commits
-        run: echo "Verifying code linting and unit tests."
+        if: always()
+        run: |
+          # Insert code for verifying code linting and unit tests here
       - name: Complete job
-        run: echo "Job completed successfully."
+        if: always()
+        run: echo "Job completed successfully"
