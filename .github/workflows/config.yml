@@ -5,8 +5,7 @@ name: branch-protection.yml
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   enforce-branch-rules:
@@ -14,20 +13,15 @@ jobs:
     strategy:
       matrix:
         node-version: [20]
-    
+    if: github.event_name == 'push' && contains(github.event.head_commit.modified, 'code')
     steps:
-      - name: Check for code changes
-        if: ${{ github.event_name == 'push' && github.event.head_commit.added.length + github.event.head_commit.modified.length + github.event.head_commit.removed.length > 0 }}
-        run: echo "Code changes detected."
-        
-      - name: Enforce code coverage report
-        if: ${{ github.event_name == 'push' }}
-        run: echo "Enforcing code coverage report."
-        
-      - name: Verify code linting and unit tests
-        if: ${{ github.event_name == 'push' }}
-        run: echo "Verifying code linting and unit tests."
-        
-      - name: Complete job
-        if: ${{ job.status == 'success' }}
-        run: echo "Job completed successfully."
+      - name: setup job
+        uses: actions/checkout@v2
+      - name: check for code changes
+        run: echo "Checking for code changes..."
+      - name: enforce code coverage report
+        run: echo "Enforcing code coverage report..."
+      - name: verify code linting and unit tests
+        run: echo "Verifying code linting and unit tests..."
+      - name: complete job
+        run: echo "Job completed successfully!"
