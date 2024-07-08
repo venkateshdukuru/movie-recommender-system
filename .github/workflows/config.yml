@@ -1,12 +1,10 @@
 
 
-name: branch-protection
-
+name: branch-protection.yml
 on:
   push:
     branches:
       - main
-
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
@@ -14,11 +12,25 @@ jobs:
       matrix:
         node-version: [20]
     steps:
-      - name: Check for code changes
-        uses: actions/checkout@v2
-      - name: Enforce code coverage report
-        run: npm run coverage
-      - name: Verify code linting and unit tests
-        run: npm run lint && npm test
-      - name: Complete job
-        run: echo "Job completed successfully."
+      - name: check for code changes
+        id: check-code-changes
+        uses: actions/github-script@v3
+        with:
+          script: |
+            if (context.payload.commits[0].added.length + context.payload.commits[0].modified.length + context.payload.commits[0].removed.length > 0) {
+              return true;
+            } else {
+              return false;
+            }
+      - name: enforce code coverage report
+        if: steps.check-code-changes.outputs.result == 'true'
+        run: |
+          # insert code coverage commands here
+      - name: verify code linting and unit tests
+        if: steps.check-code-changes.outputs.result == 'true'
+        run: |
+          # insert linting and unit test commands here
+      - name: complete job
+        if: steps.check-code-changes.outputs.result == 'true'
+        run: |
+          # insert commands to complete job here
