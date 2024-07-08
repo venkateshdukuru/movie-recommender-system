@@ -3,8 +3,7 @@
 name: branch-protection.yml
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
@@ -15,11 +14,9 @@ jobs:
       - name: Check for code changes
         uses: actions/checkout@v2
       - name: Enforce code coverage report
-        run: |
-          # insert code coverage report enforcement here
+        run: npm run coverage
       - name: Verify code linting and unit tests
-        run: |
-          # insert code linting and unit tests verification here
+        run: npm run lint && npm run test
       - name: Complete job
-        run: |
-          # insert code to complete job here
+        if: ${{ success() }}
+        run: echo "Job completed successfully."
