@@ -1,10 +1,10 @@
 
 
-
 name: branch-protection.yml
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 jobs:
   enforce-branch-rules:
     runs-on: windows-latest
@@ -16,10 +16,10 @@ jobs:
         uses: actions/checkout@v2
       - name: Enforce code coverage report
         run: |
-          # Add code coverage commands
+          # insert code coverage report enforcement here
       - name: Verify code linting and unit tests
         run: |
-          # Add linting and unit testing commands
+          # insert code linting and unit tests verification here
       - name: Complete job
         run: |
-          # Add commands to complete the job
+          # insert code to complete job here
